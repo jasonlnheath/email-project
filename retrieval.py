@@ -80,7 +80,8 @@ class SimpleBM25:
                 s += idf * num / den
             scores.append((i, s))
         scores.sort(key=lambda x: x[1], reverse=True)
-        return scores[:top_k]
+        # Always return ALL docs with scores; caller decides how many to keep
+        return scores
 
 
 # ---------------------------------------------------------------------------
@@ -194,21 +195,31 @@ class QueryRouter:
         results = []
         for idx, score in self.bm25.score(query, top_k=top_k * 3):
             e = self.tier1[idx]
-            results.append({"tier": 1, "id": e.get("email_id", str(idx)),
-                             "content": e.get("content", ""), "score": round(score, 4)})
+            results.append({
+                "tier": 1,
+                "id": e.get("email_id", str(idx)),
+                "content": e.get("content", ""),
+                "score": round(score, 4),
+                "gmail_url": e.get("gmail_url", ""),
+            })
         return results[:top_k]
 
     def search_tier2(self, query, top_k=5):
         if not getattr(self, "_nn", None):
             return []
         vec = self._tfidf.transform([query])
-        dists, indices = self._nn.kneighbors(vec, n_neighbors=min(top_k, len(self.tier2)))
+        n_neighbors = max(1, min(top_k, len(self.tier2)))
+        dists, indices = self._nn.kneighbors(vec, n_neighbors=n_neighbors)
         results = []
         for d, i in zip(dists[0], indices[0]):
             s = self.tier2[i]
-            results.append({"tier": 2, "id": s.get("email_id") or s.get("id", str(i)),
-                             "content": s.get("summary", ""),
-                             "score": round(1 - d, 4)})
+            results.append({
+                "tier": 2,
+                "id": s.get("email_id") or s.get("id", str(i)),
+                "content": s.get("summary", ""),
+                "score": round(1 - d, 4),
+                "gmail_url": s.get("gmail_url", ""),
+            })
         return results
 
     def search_tier3(self, query, top_k=3):
@@ -229,50 +240,117 @@ class QueryRouter:
                 if d.lower() in c.get("summary", "").lower():
                     score += 1.5
             if score > 0:
-                results.append({"tier": 3, "id": c.get("cluster_id", str(idx)),
-                                "content": c.get("summary", ""), "score": round(score, 4)})
+                results.append({
+                    "tier": 3,
+                    "id": c.get("cluster_id", str(idx)),
+                    "content": c.get("summary", ""),
+                    "score": round(score, 4),
+                    "gmail_urls": c.get("gmail_urls", []),
+                })
         results.sort(key=lambda x: x["score"], reverse=True)
         return results[:top_k]
 
     # ---- routing -------------------------------------------------------
 
-    def route_query(self, query, top_k=10):
+    def route_query(self, query, top_k=10, nudge=None):
+        """Route a query across tiers with transparency and nudge support.
+
+        Parameters
+        ----------
+        query : str
+            Natural-language search query.
+        top_k : int
+            Number of results to keep in 'hits' after pruning.
+        nudge : dict, optional
+            User overrides:
+              - exclude_ids: list of email IDs to remove from hits
+              - include_ids: list of email IDs to force into hits
+
+        Returns
+        -------
+        dict with keys: query, intent, tiers_searched, hits, pruned,
+                        nudge_options, metadata
+        """
         parts = self.decompose_query(query)
-        results = []
+        all_candidates = []  # every candidate found across tiers
         tiers_searched = set()
 
         if parts["intent"] == "recent":
-            results.extend(self.search_tier1(query, top_k=top_k))
+            all_candidates.extend(self.search_tier1(query, top_k=top_k * 3))
             tiers_searched.add(1)
         elif parts["intent"] == "specific_email":
-            results.extend(self.search_tier1(query, top_k=top_k))
-            results.extend(self.search_tier2(query, top_k=top_k // 2))
+            all_candidates.extend(self.search_tier1(query, top_k=top_k * 3))
+            all_candidates.extend(self.search_tier2(query, top_k=top_k // 2))
             tiers_searched.update([1, 2])
         elif parts["intent"] == "topic_search":
-            results.extend(self.search_tier2(query, top_k=top_k))
-            results.extend(self.search_tier3(query, top_k=3))
+            all_candidates.extend(self.search_tier2(query, top_k=top_k))
+            all_candidates.extend(self.search_tier3(query, top_k=3))
             tiers_searched.update([2, 3])
         else:  # aggregated
-            results.extend(self.search_tier3(query, top_k=3))
-            results.extend(self.search_tier2(query, top_k=top_k // 2))
+            all_candidates.extend(self.search_tier3(query, top_k=3))
+            all_candidates.extend(self.search_tier2(query, top_k=top_k // 2))
             tiers_searched.update([2, 3])
 
-        # Deduplicate by id, preserve order
+        # Deduplicate by id, preserve order (first occurrence wins)
         seen = set()
         unique = []
-        for r in results:
-            if r["id"] not in seen:
-                seen.add(r["id"])
-                unique.append(r)
+        for c in all_candidates:
+            if c["id"] not in seen:
+                seen.add(c["id"])
+                unique.append(c)
         unique.sort(key=lambda x: x["score"], reverse=True)
+
+        # Apply nudge filters
+        exclude_ids = set(nudge.get("exclude_ids", []) if nudge else [])
+        include_ids = set(nudge.get("include_ids", []) if nudge else [])
+
+        # Force-include requested IDs (add back if they were excluded or missing)
+        forced_in = []
+        for cid in include_ids:
+            found = next((c for c in unique if c["id"] == cid), None)
+            if found and found["id"] not in exclude_ids:
+                forced_in.append(found)
+
+        # Apply exclusions
+        hits = [c for c in unique if c["id"] not in exclude_ids] + forced_in
+        # Deduplicate again after forcing includes
+        seen2 = set()
+        deduped_hits = []
+        for h in hits:
+            if h["id"] not in seen2:
+                seen2.add(h["id"])
+                deduped_hits.append(h)
+        hits = deduped_hits
+
+        # Pruned = everything that was excluded or dropped below top_k
+        hit_ids = {h["id"] for h in hits[:top_k]}
+        pruned = [c for c in unique if c["id"] not in hit_ids]
+
+        # Sort hits by score descending
+        hits.sort(key=lambda x: x["score"], reverse=True)
+
+        # Build nudge options (show what IDs are available to nudge)
+        all_ids_in_results = [c["id"] for c in unique]
+        nudge_options = {
+            "exclude_ids": all_ids_in_results,
+            "include_ids": [],  # everything is already included
+        }
 
         return {
             "query": query,
             "intent": parts["intent"],
             "tiers_searched": sorted(tiers_searched),
-            "results": unique[:top_k],
-            "metadata": {"tier1_count": len(self.tier1), "tier2_count": len(self.tier2),
-                         "tier3_count": len(self.tier3)},
+            "hits": hits[:top_k],
+            "pruned": pruned,
+            "nudge_options": nudge_options,
+            "metadata": {
+                "tier1_count": len(self.tier1),
+                "tier2_count": len(self.tier2),
+                "tier3_count": len(self.tier3),
+                "total_candidates": len(unique),
+                "hits_returned": len(hits[:top_k]),
+                "pruned_count": len(pruned),
+            },
         }
 
     def on_demand_decompress(self, email_id):
@@ -305,10 +383,10 @@ class RetrievalPipeline:
         )
         self._cache = {}  # query_string -> result dict
 
-    def query(self, question, top_k=10):
+    def query(self, question, top_k=10, nudge=None):
         if question in self._cache:
             return self._cache[question]
-        result = self.router.route_query(question, top_k=top_k)
+        result = self.router.route_query(question, top_k=top_k, nudge=nudge)
         self._cache[question] = result
         return result
 
@@ -321,6 +399,7 @@ class RetrievalPipeline:
         """Build a context string from results, respecting token budget.
 
         Priority order: Tier 1 raw > Tier 2 summaries > Tier 3 clusters.
+        Includes Gmail links for each result.
         """
         # Sort by priority then score
         priority = {1: 0, 2: 1, 3: 2}
@@ -331,7 +410,9 @@ class RetrievalPipeline:
         tokens_used = 0
         for r in sorted_results:
             tier_label = f"[Tier {r['tier']}]"
-            header = f"## {tier_label} ID:{r['id']} ##\n"
+            gmail_link = r.get("gmail_url") or r.get("gmail_urls", [""])[0]
+            link_line = f"\n[Gmail: {gmail_link}]" if gmail_link else ""
+            header = f"## {tier_label} ID:{r['id']} ##{link_line}\n"
             body = r.get("content", "")
             snippet_len = max_tokens - tokens_used - len(header)
             if snippet_len <= 0:
