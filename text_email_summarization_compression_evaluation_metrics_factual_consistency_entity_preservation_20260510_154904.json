@@ -1,0 +1,27 @@
+[
+  {
+    "title": "ConCISE: A Reference-Free Conciseness Evaluation Metric for",
+    "href": "https://arxiv.org/html/2511.16846v2",
+    "body": "Recent studies introduced conciseness as an evaluation dimension in summarization, emphasizing semantic compression and brevity [ Chen21 ..."
+  },
+  {
+    "title": "Learning from Medical Entity Trees: An Entity-Centric Medical",
+    "href": "https://arxiv.org/html/2604.25296v1",
+    "body": "The generalization experiments confirm consistent performance gains across different architectures, validating the effectiveness of our entity-driven ..."
+  },
+  {
+    "title": "Explanatory Summarization with Discourse-Driven Planning |",
+    "href": "https://direct.mit.edu/tacl/article/doi/10.1162/TACL.a.30/133040/Explanatory-Summarization-with-Discourse-Driven",
+    "body": "Most lay summarization models follow an end-to-end approach (Goldsack et al., 2022 ; Liu et al., 2022 ; Goldsack et al., 2023 ; Liu et al., 2024 ..."
+  },
+  {
+    "title": "DiSCo: Making Absence Visible in Intelligent Summarization",
+    "href": "https://arxiv.org/html/2601.07229v2",
+    "body": "Consider a traveler evaluating beach resorts in Greece who encounters this summary: “Guests consistently praised the hotel’s warm, helpful staff ..."
+  },
+  {
+    "title": "CTRLsum: Towards Generic Controllable Text Summarization |",
+    "href": "https://www.researchgate.net/publication/372933368_CTRLsum_Towards_Generic_Controllable_Text_Summarization",
+    "body": "Each instance consists of: (i) an input article d, (ii) a human-written reference summary y ⋆ , and (iii) an instructional requirement r describing ..."
+  }
+]

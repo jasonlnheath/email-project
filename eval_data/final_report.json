@@ -1,0 +1,143 @@
+{
+  "summary": {
+    "avg_ratio": 40.1,
+    "avg_score": 63.0,
+    "rating": "MODERATE",
+    "critical_loss": 0,
+    "warnings": 1,
+    "hallucinations": 12,
+    "token_savings": 18496,
+    "token_savings_pct": 97.5
+  },
+  "per_email": [
+    {
+      "subject": "Bob's Dock's April on Bandcamp",
+      "orig_chars": 977,
+      "comp_chars": 535,
+      "ratio": 1.8261682242990653,
+      "orig_tokens": 244,
+      "comp_tokens": 133,
+      "entities": {
+        "names": {
+          "total": 4,
+          "found": 0
+        },
+        "numbers": {
+          "total": 1,
+          "found": 1
+        },
+        "urls": {
+          "total": 0,
+          "found": 0
+        },
+        "locations": {
+          "total": 1,
+          "found": 1
+        },
+        "devices": {
+          "total": 0,
+          "found": 0
+        }
+      },
+      "info_loss": [],
+      "hallucinations": [
+        "dock",
+        "specified",
+        "noreply",
+        "neutral",
+        "missing",
+        "data",
+        "none"
+      ],
+      "score": 34,
+      "reasons": [
+        "Low compression (1.8x) \u2014 original already small",
+        "Hallucination risk: 7 words"
+      ]
+    },
+    {
+      "subject": "Next Week: Last Night Saved My Life at The Pyramid Scheme.",
+      "orig_chars": 72357,
+      "comp_chars": 749,
+      "ratio": 96.60480640854473,
+      "orig_tokens": 18089,
+      "comp_tokens": 187,
+      "entities": {
+        "names": {
+          "total": 30,
+          "found": 6
+        },
+        "numbers": {
+          "total": 0,
+          "found": 0
+        },
+        "urls": {
+          "total": 0,
+          "found": 0
+        },
+        "locations": {
+          "total": 3,
+          "found": 3
+        },
+        "devices": {
+          "total": 0,
+          "found": 0
+        }
+      },
+      "info_loss": [
+        "WARNING: Location data lost"
+      ],
+      "hallucinations": [
+        "action",
+        "positive",
+        "band"
+      ],
+      "score": 71,
+      "reasons": [
+        "Good compression (96.6x)",
+        "WARNING: Location data lost",
+        "Hallucination risk: 3 words"
+      ]
+    },
+    {
+      "subject": "A new device is using your account",
+      "orig_chars": 2539,
+      "comp_chars": 607,
+      "ratio": 4.182866556836903,
+      "orig_tokens": 634,
+      "comp_tokens": 151,
+      "entities": {
+        "names": {
+          "total": 11,
+          "found": 3
+        },
+        "numbers": {
+          "total": 0,
+          "found": 0
+        },
+        "urls": {
+          "total": 11,
+          "found": 0
+        },
+        "locations": {
+          "total": 2,
+          "found": 2
+        },
+        "devices": {
+          "total": 2,
+          "found": 2
+        }
+      },
+      "info_loss": [],
+      "hallucinations": [
+        "urgent",
+        "none"
+      ],
+      "score": 84,
+      "reasons": [
+        "Moderate compression (4.2x)",
+        "Hallucination risk: 2 words"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "n_emails_fetched": 60,
+  "fetch_timestamp": "2026-05-12T21:37:19.594182Z",
+  "tier_counts": {
+    "tier1_raw": 25,
+    "tier2_summarize": 35,
+    "tier3_aggregate": 0
+  },
+  "n_summaries_generated": 35,
+  "clustering": {
+    "n_clusters": 9,
+    "silhouette_score": 0.1248
+  },
+  "compression": {
+    "total_raw_chars": 252450,
+    "total_raw_tokens": 63112,
+    "tier2_summary_chars": 9533,
+    "tier2_summary_tokens": 2383,
+    "compression_ratio_tier2": 26.48
+  },
+  "context_utilization": {
+    "tier1_tokens": 24900,
+    "tier2_tokens": 2908,
+    "tier3_tokens": 382,
+    "system_overhead_tokens": 2000,
+    "total_estimated_tokens": 30190,
+    "max_context_tokens": 64000,
+    "utilization_pct": 47.17,
+    "within_budget": true
+  },
+  "retrieval_recall": {
+    "recall@k": 0.1,
+    "samples_analyzed": 10,
+    "entailed_count": 1
+  },
+  "status": "success",
+  "elapsed_seconds": 101.71,
+  "pipeline_summary": {
+    "emails_processed": 60,
+    "raw_tier_emails": 25,
+    "summarized_tier_emails": 35,
+    "clustered_into_groups": 9,
+    "compression_ratio_tier2": 26.48,
+    "context_utilization_pct": 47.17,
+    "retrieval_recall": 0.1
+  }
+}

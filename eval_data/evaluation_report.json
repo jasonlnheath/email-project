@@ -1,0 +1,58 @@
+{
+  "evaluation_date": "2026-05-10",
+  "num_emails_evaluated": 3,
+  "per_email_results": [
+    {
+      "compression_ratio": 2.292452830188679,
+      "factual_consistency": 0.5,
+      "entity_preservation_rate": 0.0,
+      "semantic_similarity": 0.9738551807948992,
+      "hallucination_rate": 0.0,
+      "action_item_preservation": 1.0,
+      "sentiment_original": "neutral",
+      "sentiment_summary": "neutral",
+      "sentiment_preservation_rate": 1.0,
+      "composite_score": 0.64738551807949,
+      "email_id": "19e0f4d132833d68",
+      "original_length": 974,
+      "summary_length": 425
+    },
+    {
+      "compression_ratio": 15.316455696202532,
+      "factual_consistency": 1.0,
+      "entity_preservation_rate": 0.1,
+      "semantic_similarity": 0.9718990566521428,
+      "hallucination_rate": 0.0,
+      "action_item_preservation": 1.0,
+      "sentiment_original": "neutral",
+      "sentiment_summary": "positive",
+      "sentiment_preservation_rate": 0.0,
+      "composite_score": 0.7671899056652143,
+      "email_id": "19e0ef9edc140745",
+      "original_length": 9683,
+      "summary_length": 633
+    },
+    {
+      "compression_ratio": 4.943548387096774,
+      "factual_consistency": 1.0,
+      "entity_preservation_rate": 0.10526315789473684,
+      "semantic_similarity": 0.9877830295377805,
+      "hallucination_rate": 0.0,
+      "action_item_preservation": 0.0,
+      "sentiment_original": "neutral",
+      "sentiment_summary": "neutral",
+      "sentiment_preservation_rate": 1.0,
+      "composite_score": 0.6698309345327256,
+      "email_id": "19e0f1afca60b28c",
+      "original_length": 2454,
+      "summary_length": 497
+    }
+  ],
+  "summary_statistics": {
+    "avg_composite_score": 0.6948021194258099,
+    "avg_factual_consistency": 0.8333333333333334,
+    "avg_entity_preservation": 0.06842105263157895,
+    "avg_hallucination_rate": 0.0,
+    "avg_compression_ratio": 7.517485637829329
+  }
+}

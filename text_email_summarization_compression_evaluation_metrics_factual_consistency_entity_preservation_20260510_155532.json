@@ -1,0 +1,27 @@
+[
+  {
+    "title": "Factual consistency evaluation of summarization in the Era of ...Evaluation metrics | Microsoft LearnImproving Factual Consistency in Summarization with ...Factual consistency evaluation of summarization in the Era of ...AI Summarization: How Entities Improve Accuracy and ContextBalancing factual consistency and informativeness for ...GitHub - salesforce/QAFactEval",
+    "href": "https://arxiv.org/abs/2402.13758",
+    "body": "Feb 21, 2024 · Existing factual consistency (FC) metrics are constrained by their performance, efficiency, and explainability. Recent advances in Large language models (LLMs) have demonstrated remarkable potential in text evaluation but their effectiveness in assessing FC in summarization remains underexplored. Jun 25, 2024 · Several metrics have been proposed in the literature for evaluating the performance of LLMs. It is essential to use the right metrics that are suitable for the problem we are attempting to solve. We show that this model improves factual consistency while maintaining ROUGE, improving entity precision by up to 30% on XSum, and that this model can be applied on top of another post-editor, improving entity precision by up to a total of 38%. Nov 15, 2024 · Abstract Factual inconsistency with source documents in automatically generated summaries can lead to misinformation or pose risks. Existing factual consistency (FC) metrics are constrained by their performance, efficiency, and explainability. Entity-based summarization structures summaries around entities and relationships, while traditional summarization compresses text without explicit entity grounding. This distinction defines how summaries maintain factual accuracy, context, and consistency across outputs. Jul 6, 2025 · To address this challenge, we propose a fact-aware enhancement and re-ranking approach for abstractive summarization, designed to improve factual consistency while preserving informativeness. Which metric is best for evaluating the faithfulness of a summary? The most direct measure is to use an N-gram overlap metric, such as ROUGE, between each candidate summary and the source document. However, the ROUGE metric has proven to be less suitable for evaluating the faithfulness of summaries. Can fact-aware enhancement and re-ranking improve abstractive summarization? To address this challenge, we propose a fact-aware enhancement and re-ranking approach for abstractive summarization, designed to improve factual consistency while preserving informativeness. Specifically, our method first extracts factual information from the source document and constructs a corresponding fact relation graph. What is a factcc metric? FactCC is a model-based metric. It verifies the factual consistency of a summary with a source document by determining whether the summary is entailed by the source document. Does XSUM improve factual consistency and overall summarization quality? Extensive experiments on the CNN/DailyMail and XSum datasets demonstrate that our approach significantly improves factual consistency and overall summarization quality compared to state-of-the-art models. In our paper, we conduct an extensive comparison of the components of QA-based metrics for factual consistency evaluation in summarization."
+  },
+  {
+    "title": "Evaluation metrics | Microsoft Learn",
+    "href": "https://learn.microsoft.com/en-us/ai/playbook/technology-guidance/generative-ai/working-with-llms/evaluation/list-of-eval-metrics",
+    "body": "Jun 25, 2024 · Several metrics have been proposed in the literature for evaluating the performance of LLMs. It is essential to use the right metrics that are suitable for the problem we are attempting to solve."
+  },
+  {
+    "title": "Improving Factual Consistency in Summarization with ...",
+    "href": "https://aclanthology.org/2022.emnlp-main.623.pdf",
+    "body": "We show that this model improves factual consistency while maintaining ROUGE, improving entity precision by up to 30% on XSum, and that this model can be applied on top of another post-editor, improving entity precision by up to a total of 38%."
+  },
+  {
+    "title": "Factual consistency evaluation of summarization in the Era of ...",
+    "href": "https://dl.acm.org/doi/10.1016/j.eswa.2024.124456",
+    "body": "Nov 15, 2024 · Abstract Factual inconsistency with source documents in automatically generated summaries can lead to misinformation or pose risks. Existing factual consistency (FC) metrics are constrained by their performance, efficiency, and explainability."
+  },
+  {
+    "title": "AI Summarization: How Entities Improve Accuracy and Context",
+    "href": "https://searchatlas.com/blog/how-entities-support-ai-summarization/",
+    "body": "Entity-based summarization structures summaries around entities and relationships, while traditional summarization compresses text without explicit entity grounding. This distinction defines how summaries maintain factual accuracy, context, and consistency across outputs."
+  }
+]

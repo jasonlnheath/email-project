@@ -1,0 +1,62 @@
+[
+  {
+    "email_id": "19e0f4d132833d68",
+    "subject": "Bob's Dock's April on Bandcamp",
+    "summary": {
+      "sender": "Bandcamp <noreply@bandcamp.com>",
+      "date": "May 10, 2026",
+      "subject": "Bob's Dock's April on Bandcamp",
+      "purpose": "Monthly stats digest for artist Bob's Dock showing sales, followers, and plays data.",
+      "key_details": [
+        "All-time sales: $25",
+        "All-time followers: 0",
+        "April plays: 0; all-time plays: 31",
+        "Most played track not specified (bio/photo missing)"
+      ],
+      "entities": ["Bandcamp", "Bob's Dock"],
+      "sentiment": "neutral",
+      "action_required": "no",
+      "attachments": "none"
+    }
+  },
+  {
+    "email_id": "19e0ef9edc140745",
+    "subject": "Next Week: Last Night Saved My Life at The Pyramid Scheme.",
+    "summary": {
+      "sender": "Bandsintown <notifications@updates.bandsintown.com>",
+      "date": "May 9, 2026",
+      "subject": "Next Week: Last Night Saved My Life at The Pyramid Scheme.",
+      "purpose": "Concert notification alerting that band 'Last Night Saved My Life' is playing at The Pyramid Scheme venue next week, with ticket purchase prompt.",
+      "key_details": [
+        "Band: Last Night Saved My Life",
+        "Venue: The Pyramid Scheme",
+        "Event: Next week (specific date not visible in truncated content)",
+        "Call to action: Get tickets before they're gone"
+      ],
+      "entities": ["Bandsintown", "Last Night Saved My Life", "The Pyramid Scheme"],
+      "sentiment": "positive",
+      "action_required": "yes - purchase tickets",
+      "attachments": "none"
+    }
+  },
+  {
+    "email_id": "19e0f1afca60b28c",
+    "subject": "A new device is using your account",
+    "summary": {
+      "sender": "Netflix <info@account.netflix.com>",
+      "date": "May 9, 2026, 4:38 PM PDT",
+      "subject": "A new device is using your account",
+      "purpose": "Security notification about a new device signing into the user's Netflix account.",
+      "key_details": [
+        "Device: iPhone Safari - Mobile Browser",
+        "Location: Michigan, United States",
+        "Time: May 9th, 4:38 PM PDT",
+        "Account: jasonlnheath@gmail.com"
+      ],
+      "entities": ["Netflix", "Safari"],
+      "sentiment": "urgent",
+      "action_required": "yes - verify if authorized; change password if not recognized",
+      "attachments": "none"
+    }
+  }
+]
