@@ -179,12 +179,8 @@ class Summarizer:
 
     # ── Helpers ────────────────────────────────────────────────────────
 
-    def _call_llama_cpp(self, prompt: str, timeout: int = 3) -> str:
-        """Call llama.cpp via /v1/chat/completions with thinking disabled.
-        
-        Uses chat endpoint (not completions) with enable_thinking=false
-        to avoid the thousands-of-tokens thinking block that causes timeouts.
-        """
+    def _call_llama_cpp(self, prompt: str, timeout: int = 60) -> str:
+        """Call llama.cpp OpenAI-compatible API with increased timeout."""
         payload = {
             "model": self.model,
             "messages": [

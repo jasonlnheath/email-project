@@ -216,6 +216,7 @@ class QueryRouter:
             results.append({
                 "tier": 2,
                 "id": s.get("email_id") or s.get("id", str(i)),
+                "subject": s.get("subject", ""),
                 "content": s.get("summary", ""),
                 "score": round(1 - d, 4),
                 "gmail_url": s.get("gmail_url", ""),
@@ -287,9 +288,17 @@ class QueryRouter:
             all_candidates.extend(self.search_tier3(query, top_k=3))
             tiers_searched.update([2, 3])
         else:  # aggregated
-            all_candidates.extend(self.search_tier3(query, top_k=3))
-            all_candidates.extend(self.search_tier2(query, top_k=top_k // 2))
-            tiers_searched.update([2, 3])
+            # Try tier3 and tier2 first, fall back to tier1 if empty
+            tier3_hits = self.search_tier3(query, top_k=3)
+            tier2_hits = self.search_tier2(query, top_k=top_k // 2)
+            if tier3_hits or tier2_hits:
+                all_candidates.extend(tier3_hits)
+                all_candidates.extend(tier2_hits)
+                tiers_searched.update([2, 3])
+            else:
+                # Fall back to tier1 for aggregated queries when no summaries/clusters exist
+                all_candidates.extend(self.search_tier1(query, top_k=top_k))
+                tiers_searched.add(1)
 
         # Deduplicate by id, preserve order (first occurrence wins)
         seen = set()

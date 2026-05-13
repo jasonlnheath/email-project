@@ -1,6 +1,6 @@
 {
   "n_emails_fetched": 60,
-  "fetch_timestamp": "2026-05-12T21:37:19.594182Z",
+  "fetch_timestamp": "2026-05-13T00:29:03.359145Z",
   "tier_counts": {
     "tier1_raw": 25,
     "tier2_summarize": 35,
@@ -8,40 +8,40 @@
   },
   "n_summaries_generated": 35,
   "clustering": {
-    "n_clusters": 9,
-    "silhouette_score": 0.1248
+    "n_clusters": 6,
+    "silhouette_score": 0.0873
   },
   "compression": {
-    "total_raw_chars": 252450,
-    "total_raw_tokens": 63112,
-    "tier2_summary_chars": 9533,
-    "tier2_summary_tokens": 2383,
-    "compression_ratio_tier2": 26.48
+    "total_raw_chars": 250424,
+    "total_raw_tokens": 62606,
+    "tier2_summary_chars": 11653,
+    "tier2_summary_tokens": 2913,
+    "compression_ratio_tier2": 21.49
   },
   "context_utilization": {
-    "tier1_tokens": 24900,
-    "tier2_tokens": 2908,
-    "tier3_tokens": 382,
+    "tier1_tokens": 24356,
+    "tier2_tokens": 3438,
+    "tier3_tokens": 255,
     "system_overhead_tokens": 2000,
-    "total_estimated_tokens": 30190,
+    "total_estimated_tokens": 30049,
     "max_context_tokens": 64000,
-    "utilization_pct": 47.17,
+    "utilization_pct": 46.95,
     "within_budget": true
   },
   "retrieval_recall": {
-    "recall@k": 0.1,
+    "recall@k": 0.7,
     "samples_analyzed": 10,
-    "entailed_count": 1
+    "entailed_count": 7
   },
   "status": "success",
-  "elapsed_seconds": 101.71,
+  "elapsed_seconds": 107.89,
   "pipeline_summary": {
     "emails_processed": 60,
     "raw_tier_emails": 25,
     "summarized_tier_emails": 35,
-    "clustered_into_groups": 9,
-    "compression_ratio_tier2": 26.48,
-    "context_utilization_pct": 47.17,
-    "retrieval_recall": 0.1
+    "clustered_into_groups": 6,
+    "compression_ratio_tier2": 21.49,
+    "context_utilization_pct": 46.95,
+    "retrieval_recall": 0.7
   }
 }
