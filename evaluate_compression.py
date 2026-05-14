@@ -29,8 +29,12 @@ PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, PROJECT_DIR)
 
 
-def fetch_emails_gmail(max_results: int = 60) -> List[Dict]:
-    """Fetch recent emails from Gmail via API."""
+def fetch_emails_gmail(max_results: int = 50) -> List[Dict]:
+    """Fetch recent emails from Gmail via API.
+
+    Uses a reasonable default (50) to ensure enough emails for tier2 summarization.
+    Each email requires a separate API call for full format parsing.
+    """
     from gmail_fetcher import GmailFetcher
 
     fetcher = GmailFetcher(max_results=max_results)
@@ -354,11 +358,11 @@ def run_evaluation(output_path: str = "evaluation_results.json") -> Dict[str, An
             import signal
 
             def _timeout_handler(signum, frame):
-                raise TimeoutError("Gmail fetch timed out after 10s")
+                raise TimeoutError("Gmail fetch timed out after 60s")
 
             old_handler = signal.signal(signal.SIGALRM, _timeout_handler)
-            signal.alarm(10)
-            emails = fetch_emails_gmail(max_results=60)
+            signal.alarm(60)
+            emails = fetch_emails_gmail()
             signal.alarm(0)
             signal.signal(signal.SIGALRM, old_handler)
 
@@ -457,14 +461,10 @@ def run_evaluation(output_path: str = "evaluation_results.json") -> Dict[str, An
     else:
         tiers = {"tier1": emails[:results["tier_counts"]["tier1_raw"]],
                   "tier2": emails[results["tier_counts"]["tier1_raw"]:]}
-
     # ── Step 3: Summarize Tier 2 (only for Gmail fetch, not tier files) ──
+    summaries = []
     if source == "gmail_api" and tiers["tier2"]:
         summaries = summarize_tier2(tiers["tier2"])
-    elif not summaries:
-        summaries = []
-
-    results["n_summaries_generated"] = len(summaries)
 
     # ── Step 4: Cluster Tier 2 ───────────────────────────────────────────
     cluster_result = cluster_tier2(summaries)

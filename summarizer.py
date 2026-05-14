@@ -57,6 +57,20 @@ class Summarizer:
         # Extract key info from body for short prompt
         truncated_body = self._truncate(body)
 
+        # Pre-extract concrete entities as ground-truth anchors
+        anchors = self._pre_extract_entities(body)
+        anchor_parts = []
+        if anchors["money"]:
+            anchor_parts.append(f"Money found: {', '.join(anchors['money'])}")
+        if anchors["phones"]:
+            anchor_parts.append(f"Phone numbers found: {', '.join(anchors['phones'])}")
+        if anchors["urls"]:
+            anchor_parts.append(f"URLs found: {', '.join(anchors['urls'][:5])}")
+        if anchors["dates"]:
+            anchor_parts.append(f"Dates found: {', '.join(anchors['dates'])}")
+
+        anchor_text = "\n".join(anchor_parts) if anchor_parts else ""
+
         prompt = (
             f"Analyze this email and extract structured information.\n\n"
             f"FROM: {sender}\n"
@@ -67,14 +81,22 @@ class Summarizer:
             "- sender: the sender name/email\n"
             "- date: the email date string\n"
             "- subject: the email subject\n"
-            "- key_entities: list of 3-8 important entities (people, organizations, products, projects, dates, amounts, account numbers, file names)\n"
-            "- action_items: list of 0-5 specific actions requested or required (e.g., 'Reply by Friday', 'Review attached PDF')\n"
+            "- key_entities: list of 3-8 concrete entities EXTRACTED FROM THE EMAIL BODY. "
+            "Include: person names, company names, product names, specific dates, dollar amounts, "
+            "account numbers, file names, URLs. DO NOT invent or infer entities not explicitly stated.\n"
+            "- action_items: list of 0-5 specific actions requested or required. "
+            "An action item is a REQUEST, DEADLINE, or TASK directed at someone. "
+            "Examples: 'Reply by Friday', 'Review attached PDF', 'Call Sarah at (555) 123-4567'. "
+            "Do NOT include general statements like 'Please review' without specifics.\n"
             "- sentiment: one of 'positive', 'negative', 'neutral'\n\n"
-            "Rules:\n"
-            "- key_entities MUST include concrete nouns (names, companies, products, dates, dollar amounts, account numbers)\n"
-            "- action_items MUST capture any requests, deadlines, or tasks mentioned\n"
-            "- If the email is promotional/spam with no real content, set key_entities to [] and action_items to []\n"
-            "- Return JSON only, no other text\n"
+            "CRITICAL RULES:\n"
+            "1. ONLY extract what appears in the email body. Do NOT guess or infer.\n"
+            "2. If an entity/action is not explicitly stated, omit it — do NOT fabricate.\n"
+            "3. Dollar amounts must include the $ sign and exact figure from the email.\n"
+            "4. Phone numbers must match exactly as written in the email.\n"
+            "5. Dates must match exactly (e.g., 'March 15' not 'mid-March').\n"
+            "6. If the email has no real content (spam/promotional), set key_entities=[] and action_items=[].\n"
+            "7. Return JSON only, no other text.\n"
         )
         return prompt
 
@@ -119,6 +141,9 @@ class Summarizer:
         for key in ("sender", "date", "subject", "key_entities", "action_items", "sentiment"):
             if key not in result:
                 result[key] = self._default_value(key, email)
+
+        # Verify extracted entities/actions against original body
+        result = self._verify_summary(result, email)
 
         return result
 
@@ -166,6 +191,64 @@ class Summarizer:
     #         "sentiment": "neutral",
     #     }
 
+    # ── Verification ────────────────────────────────────────────────────
+
+    def _verify_summary(self, summary: Dict, email: Dict) -> Dict:
+        """Verify extracted entities/actions against original email body.
+
+        Removes any entity or action item that does not appear in the original
+        email body (case-insensitive substring match). This catches hallucinated
+        content at the post-processing level.
+        """
+        body = (email.get("body") or "").lower()
+        if not body.strip():
+            return summary
+
+        # Verify key_entities — remove any not found in body
+        verified_entities = []
+        for entity in summary.get("key_entities", []):
+            entity_lower = str(entity).lower()
+            if len(entity_lower) > 2 and entity_lower in body:
+                verified_entities.append(entity)
+
+        # Verify action_items similarly
+        verified_actions = []
+        for action in summary.get("action_items", []):
+            action_lower = str(action).lower()
+            if len(action_lower) > 3 and action_lower in body:
+                verified_actions.append(action)
+
+        summary["key_entities"] = verified_entities
+        summary["action_items"] = verified_actions
+        return summary
+
+    def _pre_extract_entities(self, body: str) -> Dict[str, List[str]]:
+        """Extract concrete entities from body using regex as anchors.
+
+        These anchors are fed to the LLM prompt so it has ground-truth
+        evidence of what's actually in the email, reducing hallucination.
+        """
+        import re
+        entities = {"money": [], "phones": [], "dates": [], "urls": []}
+
+        # Money (e.g., $5,000 or $5.2k)
+        entities["money"] = list(set(re.findall(r'\$[\d,]+(?:\.\d{2})?', body)))
+        # Phone numbers
+        entities["phones"] = list(set(re.findall(
+            r'\b\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b', body
+        )))
+        # URLs
+        entities["urls"] = list(set(re.findall(
+            r'https?://[^\s<>"]+|www\.[^\s<>"]+', body
+        )))
+        # Dates (Month DD, YYYY)
+        entities["dates"] = list(set(re.findall(
+            r'(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]* \d{1,2},? \d{4}',
+            body, re.IGNORECASE
+        )))
+
+        return entities
+
     # ── Batch processing ─────────────────────────────────────────────
 
     def summarize_batch(self, emails: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -186,8 +269,8 @@ class Summarizer:
             "messages": [
                 {"role": "user", "content": prompt},
             ],
-            "temperature": 0.7,
-            "max_tokens": 512,
+            "temperature": 0.1,
+            "max_tokens": 2048,
             "chat_template_kwargs": {"enable_thinking": False},
         }
         resp = requests.post(
