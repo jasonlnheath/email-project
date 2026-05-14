@@ -1,38 +1,38 @@
 """Gmail email fetcher — pulls emails from Gmail API for the compression pipeline.
 
-Uses google-api-python-client with OAuth2 authentication via ~/.hermes/google_token.json.
+Uses raw HTTP calls to Gmail REST API (bypasses googleapiclient discovery limitations).
 Returns structured email dicts matching the expected schema for the compression pipeline.
 
-Dependencies: google-api-python-client, google-auth (both already installed).
+Dependencies: google-auth (for token refresh), requests or urllib.
 """
 
 from __future__ import annotations
 
 import base64
-import email as email_module
 import json
 import os
 import re
 import sys
-from datetime import datetime
+import time
+from datetime import datetime, timezone
 from typing import Dict, List, Optional
+from urllib.parse import urlencode
+from urllib.request import Request, urlopen
+from urllib.error import URLError
 
 try:
-    from google.auth.transport.requests import Request
     from google.oauth2.credentials import Credentials
-    from google_auth_oauthlib.flow import InstalledAppFlow
-    from googleapiclient.discovery import build
 except ImportError as exc:  # pragma: no cover
     print(
         f"ERROR: Required dependency not found — {exc.name}. "
-        f"Install with: pip install google-api-python-client google-auth google-auth-oauthlib",
+        f"Install with: pip install google-auth",
         file=sys.stderr,
     )
     sys.exit(1)
 
 
-# Gmail API scope — read-only access to user's email
-SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
+# Gmail API base URL
+GMAIL_API_BASE = "https://gmail.googleapis.com/gmail/v1/users/me"
 
 # Default token path used by the Hermes Google Workspace integration
 DEFAULT_TOKEN_PATH = os.path.expanduser("~/.hermes/google_token.json")
@@ -42,7 +42,7 @@ GMAIL_API_MAX_RESULTS = 500
 
 
 class GmailFetcher:
-    """Fetch and parse emails from Gmail using the Gmail API.
+    """Fetch and parse emails from Gmail using raw HTTP REST API.
 
     Parameters
     ----------
@@ -57,14 +57,16 @@ class GmailFetcher:
         max_results: int = 50,
         token_path: Optional[str] = None,
     ):
-        self.max_results = min(max_results, GMAIL_API_MAX_RESULTS)
+        self.max_results = min(max_results, 500)
         self.token_path = token_path or DEFAULT_TOKEN_PATH
-        self._service = None
+        self._credentials = None
+        self._token = None
+        self._expiry = None
 
     # ── Authentication ───────────────────────────────────────────────────
 
-    def _get_credentials(self) -> Credentials:
-        """Load OAuth2 credentials from the token file."""
+    def _refresh_token(self) -> str:
+        """Get a valid access token, refreshing if needed."""
         if not os.path.isfile(self.token_path):
             raise FileNotFoundError(
                 f"OAuth token not found at {self.token_path}. "
@@ -74,115 +76,286 @@ class GmailFetcher:
         with open(self.token_path, "r", encoding="utf-8") as fh:
             token_data = json.load(fh)
 
-        # Support both 'access_token' (googleapiclient format) and 'token' (google-auth format)
         access_token = token_data.get("access_token") or token_data.get("token", "")
-        return Credentials(
-            token=access_token,
-            refresh_token=token_data.get("refresh_token"),
-            token_uri=token_data.get("token_uri", "https://oauth2.googleapis.com/token"),
-            client_id=token_data.get("client_id"),
-            client_secret=token_data.get("client_secret"),
-            scopes=[SCOPES[0]],
+        refresh_token = token_data.get("refresh_token")
+
+        if access_token:
+            return access_token
+
+        if refresh_token:
+            return self._do_refresh(refresh_token, token_data)
+
+        raise FileNotFoundError(
+            f"No valid token in {self.token_path}. "
+            f"File has neither 'access_token' nor 'refresh_token'."
         )
 
-    def _build_service(self):
-        """Build the Gmail API service object."""
-        if self._service is None:
-            creds = self._get_credentials()
-            self._service = build("gmail", "v1", credentials=creds)
-        return self._service
+    def _do_refresh(self, refresh_token: str, token_data: dict) -> str:
+        """Perform an OAuth2 refresh grant to get a new access token."""
+        client_id = token_data.get("client_id", "")
+        client_secret = token_data.get("client_secret", "")
 
-    # ── Email fetching ───────────────────────────────────────────────────
+        if not client_id or not client_secret:
+            raise FileNotFoundError(
+                f"Token file missing client_id/client_secret for refresh. "
+                f"Re-run Google Workspace setup."
+            )
+
+        url = "https://oauth2.googleapis.com/token"
+        data = (
+            f"grant_type=refresh_token&refresh_token={refresh_token}"
+            f"&client_id={client_id}&client_secret={client_secret}"
+        ).encode("utf-8")
+
+        req = Request(url, data=data, method="POST")
+        req.add_header("Content-Type", "application/x-www-form-urlencoded")
+
+        try:
+            with urlopen(req, timeout=10) as resp:
+                result = json.loads(resp.read().decode())
+                new_token = result.get("access_token")
+                if not new_token:
+                    raise FileNotFoundError(
+                        f"Token refresh returned no access_token: {result}"
+                    )
+                return new_token
+        except URLError as exc:
+            raise FileNotFoundError(
+                f"Token refresh failed: {exc}. "
+                f"Re-run Google Workspace setup."
+            ) from exc
+
+    def _get_credentials(self):
+        """Load google-auth Credentials object, refreshing if needed."""
+        if self._credentials is None or self._credentials.expired:
+            if not os.path.isfile(self.token_path):
+                raise FileNotFoundError(
+                    f"OAuth token not found at {self.token_path}. "
+                    f"Run the Google Workspace setup to generate a token."
+                )
+            with open(self.token_path, "r", encoding="utf-8") as fh:
+                token_data = json.load(fh)
+
+            access_token = token_data.get("access_token") or token_data.get("token", "")
+            refresh_token = token_data.get("refresh_token")
+            client_id = token_data.get("client_id", "")
+            client_secret = token_data.get("client_secret", "")
+            token_uri = token_data.get("token_uri", "https://oauth2.googleapis.com/token")
+            scopes = token_data.get("scopes", [])
+
+            self._credentials = Credentials(
+                token=access_token,
+                refresh_token=refresh_token,
+                token_uri=token_uri,
+                client_id=client_id,
+                client_secret=client_secret,
+                scopes=scopes,
+            )
+            # Force a refresh to get a valid token
+            if self._credentials.expired or not self._credentials.valid:
+                try:
+                    from google.auth.transport.requests import Request as AuthRequest
+                    self._credentials.refresh(AuthRequest())
+                except Exception:
+                    pass  # Token might still be usable
+        return self._credentials
+
+    # ── API Calls ────────────────────────────────────────────────────────
+
+    def _api_get(self, path: str, params: Optional[dict] = None) -> dict:
+        """Make a GET request to the Gmail API using google-auth transport."""
+        from google.auth.transport.requests import Request as AuthRequest
+
+        creds = self._get_credentials()
+
+        # Build URL with query params
+        url = f"{GMAIL_API_BASE}/{path}"
+        if params:
+            url += "?" + urlencode(params)
+
+        # Use AuthorizedSession for proper auth handling
+        try:
+            from google.auth.transport.requests import AuthorizedSession
+            auth_session = AuthorizedSession(creds)
+            resp = auth_session.get(url, timeout=30)
+        except ImportError:
+            # Fallback: manually add token to headers
+            if creds.token is None or creds.expired:
+                creds.refresh(AuthRequest())
+            req = Request(url)
+            req.add_header("Authorization", f"Bearer {creds.token}")
+            with urlopen(req, timeout=30) as resp:
+                return json.loads(resp.read().decode())
+
+        if resp.status_code != 200:
+            raise RuntimeError(
+                f"Gmail API error: HTTP {resp.status_code}: {resp.text[:200]}"
+            )
+
+        return json.loads(resp.text)
 
     def fetch(
         self,
-        query: Optional[str] = None,
-        max_results: Optional[int] = None,
+        query: str = "",
         after: Optional[str] = None,
         before: Optional[str] = None,
-    ) -> List[Dict]:
-        """Fetch emails from Gmail with optional filters.
+        max_results: Optional[int] = None,
+    ) -> List[dict]:
+        """Fetch emails from Gmail.
 
         Parameters
         ----------
-        query : str or None
-            Gmail search query (e.g., 'from:boss', 'has:attachment').
-        max_results : int or None
-            Override the default max_results.
-        after : str or None
-            Only return emails after this date (YYYY-MM-DD format).
-        before : str or None
-            Only return emails before this date (YYYY-MM-DD format).
+        query : str
+            Gmail search query string (e.g., 'is:unread').
+        after : str, optional
+            Only include messages dated after this date (YYYY-MM-DD).
+        before : str, optional
+            Only include messages dated before this date (YYYY-MM-DD).
+        max_results : int, optional
+            Override the instance's max_results for this call.
 
         Returns
         -------
-        list of dict — parsed email records.
+        list[dict]
+            List of parsed email dicts.
         """
-        service = self._build_service()
-        limit = min(max_results or self.max_results, GMAIL_API_MAX_RESULTS)
-
-        # Build Gmail search query
-        gmail_query_parts = []
-        if query:
-            gmail_query_parts.append(query)
+        effective_max = max_results if max_results is not None else self.max_results
+        # Build Gmail search query with date filters
+        gmail_query = query.strip()
         if after:
-            gmail_query_parts.append(f"after:{after}")
+            # Gmail uses 'after:YYYY/MM/DD' format
+            gmail_after = after.replace("-", "/")
+            gmail_query += f" after:{gmail_after}" if gmail_query else f"after:{gmail_after}"
         if before:
-            gmail_query_parts.append(f"before:{before}")
-        gmail_query = " ".join(gmail_query_parts) if gmail_query_parts else "in:anywhere"
+            gmail_before = before.replace("-", "/")
+            gmail_query += f" before:{gmail_before}" if gmail_query else f"before:{gmail_before}"
 
-        # Fetch messages
-        results = service.users().messages().list(
-            userId="me",
-            q=gmail_query,
-            maxResults=limit,
-        ).execute()
+         # Fetch message IDs via the messages/list endpoint
+        params = {
+            "maxResults": effective_max,
+        }
+        if gmail_query:
+            params["q"] = gmail_query
 
-        messages = results.get("messages", [])
+        data = self._api_get("messages", params)
+        message_ids = [m["id"] for m in data.get("messages", [])]
 
-        if not messages:
+        if not message_ids:
             return []
 
-        # Fetch full message details (batched)
-        parsed_emails = []
-        for msg in messages:
+        # Fetch full messages
+        all_emails = []
+        for msg_id in message_ids:
             try:
-                raw = service.users().messages().get(
-                    userId="me",
-                    id=msg["id"],
-                    format="full",
-                ).execute()
-                parsed = self.parse_email(raw)
-                parsed_emails.append(parsed)
-            except Exception as exc:  # pragma: no cover — API errors on individual msgs
-                print(f"[gmail_fetcher] Warning: failed to fetch message {msg.get('id')}: {exc}", file=sys.stderr)
+                msg_data = self._api_get(f"messages/{msg_id}", {"format": "full"})
+                parsed = self.parse_email(msg_data)
+                all_emails.append(parsed)
+            except Exception:
+                # Skip messages that fail to parse
                 continue
 
-        return parsed_emails
+        return all_emails
 
-    def _parse_messages(self, messages: List[Dict]) -> List[Dict]:
-        """Parse a list of raw Gmail message dicts into structured email records.
-
-        This is a convenience method for testing without hitting the API.
-        """
-        if not messages:
-            return []
-
-        results = []
-        for msg in messages:
-            try:
-                parsed = self.parse_email(msg)
-                results.append(parsed)
-            except Exception as exc:  # pragma: no cover
-                print(f"[gmail_fetcher] Warning: parse error: {exc}", file=sys.stderr)
-                continue
-        return results
-
-     # ── Email parsing ────────────────────────────────────────────────────
+    # ── Parsing ──────────────────────────────────────────────────────────
 
     @staticmethod
-    def parse_email(raw_message: Dict) -> Dict:
-        """Parse a raw Gmail API message dict into a structured email record.
+    def _parse_date(date_str: str) -> Optional[datetime]:
+        """Parse a date string in various formats.
+
+        Supports RFC 2822, ISO 8601, and date-only formats.
+        Returns naive datetime (no timezone info) for consistent comparison.
+        Returns None if parsing fails.
+        """
+        if not date_str or not isinstance(date_str, str):
+            return None
+
+        date_str = date_str.strip()
+
+        # Try RFC 2822 format: "Mon, 12 May 2026 10:30:00 +0000"
+        try:
+            dt = datetime.strptime(date_str, "%a, %d %b %Y %H:%M:%S %z")
+            return dt.replace(tzinfo=None)  # Return naive for consistent comparison
+        except ValueError:
+            pass
+
+        # Try ISO 8601 with timezone: "2026-05-12T10:30:00Z" or "+00:00"
+        try:
+            dt = datetime.fromisoformat(date_str)
+            return dt.replace(tzinfo=None)  # Return naive for consistent comparison
+        except ValueError:
+            pass
+
+        # Try date-only: "2026-05-12"
+        try:
+            dt = datetime.strptime(date_str, "%Y-%m-%d")
+            return dt  # Already naive
+        except ValueError:
+            pass
+
+        return None
+
+    @staticmethod
+    def _extract_text_from_payload(payload: dict) -> str:
+        """Extract text content from a Gmail API payload.
+
+        Handles plain text, multipart/alternative (prefers text/plain),
+        and HTML (strips tags).
+        """
+        mime_type = payload.get("mimeType", "")
+
+        # Direct body
+        if "body" in payload and "data" in payload["body"]:
+            raw_data = payload["body"]["data"]
+            if raw_data:
+                try:
+                    decoded = base64.urlsafe_b64decode(raw_data).decode("utf-8")
+                    if mime_type == "text/html":
+                        return re.sub(r"<[^>]+>", "", decoded)
+                    return decoded
+                except Exception:
+                    return ""
+
+        # Multipart — look for text/plain part first, then text/html
+        parts = payload.get("parts", [])
+        if not parts:
+            return ""
+
+        # Prefer text/plain
+        for part in parts:
+            if part.get("mimeType") == "text/plain":
+                body = part.get("body", {})
+                raw_data = body.get("data", "")
+                if raw_data:
+                    try:
+                        return base64.urlsafe_b64decode(raw_data).decode("utf-8")
+                    except Exception:
+                        continue
+
+        # Fall back to text/html
+        for part in parts:
+            if part.get("mimeType") == "text/html":
+                body = part.get("body", {})
+                raw_data = body.get("data", "")
+                if raw_data:
+                    try:
+                        html = base64.urlsafe_b64decode(raw_data).decode("utf-8")
+                        return re.sub(r"<[^>]+>", "", html)
+                    except Exception:
+                        continue
+
+        return ""
+
+    @staticmethod
+    def _get_header(headers: list, name: str) -> Optional[str]:
+        """Get a header value by name (case-insensitive)."""
+        for h in headers:
+            if h.get("name", "").lower() == name.lower():
+                return h.get("value", "")
+        return None
+
+    @classmethod
+    def parse_email(cls, raw_message: dict) -> dict:
+        """Parse a raw Gmail API message into a structured email dict.
 
         Parameters
         ----------
@@ -196,177 +369,99 @@ class GmailFetcher:
         payload = raw_message.get("payload", {})
         headers = payload.get("headers", [])
 
-        # Extract headers
-        def _get_header(name: str) -> str:
-            for h in headers:
-                if h["name"].lower() == name.lower():
-                    return h.get("value", "")
-            return ""
+        # Extract standard fields
+        subject = cls._get_header(headers, "Subject") or "(no subject)"
+        sender = cls._get_header(headers, "From") or "(unknown sender)"
+        date_str = cls._get_header(headers, "Date") or ""
+        snippet = raw_message.get("snippet", "")
 
-        msg_id = raw_message.get("id", "unknown")
-        subject = _get_header("Subject") or "(no subject)"
-        sender = _get_header("From") or "(unknown sender)"
-        date_str = _get_header("Date") or ""
+        # Parse date (store original string for display)
+        parsed_date = cls._parse_date(date_str) if date_str else None
+        date = date_str if date_str else ""
 
-        # Extract body text from MIME parts
-        body = GmailFetcher._extract_body(payload)
+        # Extract body text
+        body = cls._extract_text_from_payload(payload)
 
-        # Parse attachments info
-        attachments = GmailFetcher._extract_attachments(payload)
-
-        # Construct Gmail web URL for this message
-        gmail_url = f"https://mail.google.com/mail/u/0/#inbox/{msg_id}"
-
-        return {
-            "id": msg_id,
-            "subject": subject,
-            "sender": sender,
-            "date": date_str,
-            "body": body,
-            "snippet": raw_message.get("snippet", ""),
-            "attachments": attachments,
-            "gmail_url": gmail_url,
-        }
-
-    @staticmethod
-    def _extract_body(payload: Dict) -> str:
-        """Extract plain text body from a MIME payload."""
-        parts = payload.get("parts", [])
-        if not parts:
-            # Try top-level body directly
-            body_data = payload.get("body", {})
-            if body_data and body_data.get("data"):
-                raw = GmailFetcher._decode_mime_body(body_data["data"])
-                # Strip HTML tags if content looks like HTML
-                if "<" in raw and ">" in raw:
-                    import re as _re
-                    return _re.sub(r"<[^>]+>", "", raw)
-                return raw
-            return ""
-
-        # First pass: prefer text/plain
-        for part in parts:
-            mime = part.get("mimeType", "")
-            if mime == "text/plain":
-                body_data = part.get("body", {})
-                if body_data and body_data.get("data"):
-                    return GmailFetcher._decode_mime_body(body_data["data"])
-
-        # Second pass: fall back to text/html (stripped)
-        for part in parts:
-            mime = part.get("mimeType", "")
-            if mime == "text/html":
-                body_data = part.get("body", {})
-                if body_data and body_data.get("data"):
-                    html = GmailFetcher._decode_mime_body(body_data["data"])
-                    import re as _re
-                    return _re.sub(r"<[^>]+>", "", html)
-
-        # No text parts found — try multipart/alternative (nested)
-        for part in parts:
-            inner_parts = part.get("parts", [])
-            for inner in inner_parts:
-                if inner.get("mimeType") == "text/plain":
-                    body_data = inner.get("body", {})
-                    if body_data and body_data.get("data"):
-                        return GmailFetcher._decode_mime_body(body_data["data"])
-
-        return ""
-
-    @staticmethod
-    def _decode_mime_body(data: str) -> str:
-        """Decode a base64url-encoded MIME body string."""
-        if not data:
-            return ""
-        padded = data + "=" * (-len(data) % 4)
-        try:
-            decoded = base64.urlsafe_b64decode(padded)
-            return decoded.decode("utf-8", errors="replace")
-        except Exception:
-            return ""
-
-    @staticmethod
-    def _extract_attachments(payload: Dict) -> List[Dict]:
-        """Extract attachment metadata from payload parts."""
+        # Extract attachments
         attachments = []
-        for part in payload.get("parts", []):
-            if part.get("filename") and not part.get("mimeType", "").startswith("text/"):
-                body = part.get("body", {})
-                size = int(body.get("size", 0)) if body else 0
+        parts = payload.get("parts", [])
+        for part in parts:
+            mime_type = part.get("mimeType", "")
+            if mime_type and not mime_type.startswith("text/"):
+                body_info = part.get("body", {})
+                filename = part.get("filename", "")
+                size = body_info.get("size", 0)
                 attachments.append({
-                    "filename": part["filename"],
-                    "type": part.get("mimeType", "unknown"),
+                    "filename": filename,
+                    "type": mime_type,
                     "size_bytes": size,
                 })
-        return attachments
 
-    # ── Date filtering ───────────────────────────────────────────────────
+        # Extract RFC822 Message-ID for direct Gmail links (from headers)
+        rfc822_message_id = cls._get_header(headers, "Message-ID") or ""
 
-    @staticmethod
-    def _parse_date(date_str: str) -> Optional[datetime]:
-        """Parse a date string into a datetime object (always returns naive UTC)."""
-        if not date_str:
-            return None
-        # Try common formats
-        for fmt in (
-            "%a, %d %b %Y %H:%M:%S %z",  # RFC 2822
-            "%a, %d %b %Y %H:%M:%S %Z",  # with timezone name
-            "%Y-%m-%dT%H:%M:%SZ",         # ISO 8601 UTC
-            "%Y-%m-%dT%H:%M:%S%z",        # ISO 8601 with offset
-            "%Y-%m-%d",                    # Date only
-        ):
+        return {
+            "id": raw_message.get("id", ""),
+            "threadId": raw_message.get("threadId", ""),
+            "rfc822MessageId": rfc822_message_id,
+            "subject": subject,
+            "sender": sender,
+            "date": date,
+            "body": body,
+            "snippet": snippet,
+            "attachments": attachments,
+        }
+
+    @classmethod
+    def _parse_messages(cls, messages: list) -> List[dict]:
+        """Parse a list of raw message dicts into structured email dicts."""
+        results = []
+        for msg in messages:
             try:
-                dt = datetime.strptime(date_str, fmt)
-                # Normalize to naive UTC for consistent comparison
-                if dt.tzinfo is not None:
-                    from datetime import timezone
-                    dt = dt.astimezone(timezone.utc).replace(tzinfo=None)
-                return dt
-            except (ValueError, TypeError):
+                parsed = cls.parse_email(msg)
+                results.append(parsed)
+            except Exception:
                 continue
-        return None
+        return results
+
+    # ── Filtering ────────────────────────────────────────────────────────
 
     def filter_by_date(
         self,
-        messages: List[Dict],
+        messages: List[dict],
         after: Optional[str] = None,
         before: Optional[str] = None,
-    ) -> List[Dict]:
-        """Filter parsed email records by date range.
+    ) -> List[dict]:
+        """Filter messages by date range.
 
         Parameters
         ----------
-        messages : list of dict
-            Parsed email records (must have 'date' field).
-        after : str or None
-            Only include emails after this date (YYYY-MM-DD).
-        before : str or None
-            Only include emails before this date (YYYY-MM-DD).
+        messages : list[dict]
+            List of email dicts with 'date' field.
+        after : str, optional
+            Only include messages dated after this date (YYYY-MM-DD).
+        before : str, optional
+            Only include messages dated before this date (YYYY-MM-DD).
 
         Returns
         -------
-        list of dict — filtered email records.
+        list[dict]
+            Filtered list of email dicts.
         """
-        if not messages:
-            return []
+        after_dt = self._parse_date(after) if after else None
+        before_dt = self._parse_date(before) if before else None
 
-        after_dt = datetime.strptime(after, "%Y-%m-%d") if after else None
-        before_dt = datetime.strptime(before, "%Y-%m-%d") if before else None
-
-        results = []
+        filtered = []
         for msg in messages:
             msg_date = self._parse_date(msg.get("date", ""))
             if msg_date is None:
                 continue
 
-            # Normalize to date-only for comparison
-            msg_date_only = msg_date.replace(hour=0, minute=0, second=0, microsecond=0)
-
-            if after_dt and msg_date_only < after_dt:
+            if after_dt and msg_date < after_dt:
                 continue
-            if before_dt and msg_date_only >= before_dt:
+            if before_dt and msg_date >= before_dt:
                 continue
 
-            results.append(msg)
+            filtered.append(msg)
 
-        return results
+        return filtered

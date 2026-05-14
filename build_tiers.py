@@ -16,7 +16,9 @@ The --cluster flag clusters tier2 emails into tier3 groups.
 import argparse
 import json
 import os
+import shutil
 import sys
+import tempfile
 from datetime import datetime, timedelta
 
 # Add project dir to path
@@ -72,6 +74,28 @@ def classify_tiers(emails, tier2_threshold=500, tier3_threshold=1000):
     return {"tier1": tier1, "tier2": tier2, "tier3": tier3}
 
 
+def atomic_write(path: str, records: list):
+    """Write JSONL records atomically using temp file + rename.
+    
+    Prevents data loss if the process crashes mid-write — the original
+    file is only replaced after the full write succeeds.
+    """
+    dir_name = os.path.dirname(path) or "."
+    fd, tmp_path = tempfile.mkstemp(dir=dir_name, suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            for record in records:
+                f.write(json.dumps(record, ensure_ascii=False) + "\n")
+        shutil.move(tmp_path, path)
+    except Exception:
+        # Clean up temp file on failure
+        try:
+            os.unlink(tmp_path)
+        except OSError:
+            pass
+        raise
+
+
 def write_tier_files(tiers, output_dir=PROJECT_DIR):
     """Write tier data to JSONL files with correct schema."""
     # Tier 1: raw emails with body content and gmail_url
@@ -99,22 +123,16 @@ def write_tier_files(tiers, output_dir=PROJECT_DIR):
 
     # Write tier1
     tier1_path = os.path.join(output_dir, "tier1.jsonl")
-    with open(tier1_path, "w", encoding="utf-8") as f:
-        for record in tier1_records:
-            f.write(json.dumps(record, ensure_ascii=False) + "\n")
+    atomic_write(tier1_path, tier1_records)
     print(f"[build_tiers] Wrote {len(tier1_records)} records to {tier1_path}")
 
     # Write empty tier2/tier3 (will be filled if --summarize/--cluster)
     tier2_path = os.path.join(output_dir, "tier2.jsonl")
-    with open(tier2_path, "w", encoding="utf-8") as f:
-        for record in tier2_records:
-            f.write(json.dumps(record, ensure_ascii=False) + "\n")
+    atomic_write(tier2_path, tier2_records)
     print(f"[build_tiers] Wrote {len(tier2_records)} records to {tier2_path}")
 
     tier3_path = os.path.join(output_dir, "tier3.jsonl")
-    with open(tier3_path, "w", encoding="utf-8") as f:
-        for record in tier3_records:
-            f.write(json.dumps(record, ensure_ascii=False) + "\n")
+    atomic_write(tier3_path, tier3_records)
     print(f"[build_tiers] Wrote {len(tier3_records)} records to {tier3_path}")
 
     return tier1_records, tier2_records, tier3_records
@@ -177,9 +195,7 @@ Return JSON with fields: summary, key_entities, action_items, sentiment"""
 
     # Write tier2
     tier2_path = os.path.join(output_dir, "tier2.jsonl")
-    with open(tier2_path, "w", encoding="utf-8") as f:
-        for record in summaries:
-            f.write(json.dumps(record, ensure_ascii=False) + "\n")
+    atomic_write(tier2_path, summaries)
     print(f"[build_tiers] Wrote {len(summaries)} summaries to {tier2_path}")
 
     return summaries
@@ -199,16 +215,7 @@ def cluster_tier2(summaries, output_dir=PROJECT_DIR):
 
     # Write tier3
     tier3_path = os.path.join(output_dir, "tier3.jsonl")
-    with open(tier3_path, "w", encoding="utf-8") as f:
-        for cluster in clusters:
-            record = {
-                "cluster_id": cluster.get("cluster_id", ""),
-                "summary": cluster.get("summary", ""),
-                "emails": cluster.get("emails", []),
-                "gmail_urls": [e.get("gmail_url", "") for e in cluster.get("emails", [])],
-                "tier": "tier3",
-            }
-            f.write(json.dumps(record, ensure_ascii=False) + "\n")
+    atomic_write(tier3_path, clusters)
     print(f"[build_tiers] Wrote {len(clusters)} clusters to {tier3_path}")
 
     return clusters

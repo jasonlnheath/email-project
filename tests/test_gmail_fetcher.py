@@ -1,4 +1,4 @@
-"""Tests for Gmail fetcher module — follows TDD (tests written before implementation)."""
+"""Tests for Gmail fetcher module — follows strict TDD (tests written before implementation)."""
 from __future__ import annotations
 
 import base64
@@ -22,16 +22,14 @@ def test_import_gmail_fetcher():
 # ── Test 2: OAuth authentication via token file ────────────────────────────
 
 def test_fetcher_auth_via_google_workspace(monkeypatch):
-    """GmailFetcher loads OAuth credentials from ~/.hermes/google_token.json."""
+    """GmailFetcher loads OAuth credentials from a token JSON file."""
     fake_token = {
         "access_token": "fake-oauth-token-123",
         "refresh_token": "rt_abc123",
-        "token_uri": "https://oauth2.googleapis.com/token",
         "client_id": "test-client-id",
         "client_secret": "test-secret",
     }
 
-    # Create a temporary token file
     import tempfile
     with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
         json.dump(fake_token, f)
@@ -41,12 +39,9 @@ def test_fetcher_auth_via_google_workspace(monkeypatch):
         from gmail_fetcher import GmailFetcher
 
         fetcher = GmailFetcher(token_path=token_path)
-        creds = fetcher._get_credentials()
+        token = fetcher._refresh_token()
 
-        assert creds.token == "fake-oauth-token-123"
-        assert creds.refresh_token == "rt_abc123"
-        assert creds.client_id == "test-client-id"
-        assert creds.scopes == ["https://www.googleapis.com/auth/gmail.readonly"]
+        assert token == "fake-oauth-token-123"
     finally:
         os.unlink(token_path)
 
@@ -57,7 +52,7 @@ def test_fetcher_missing_token_file():
 
     fetcher = GmailFetcher(token_path="/nonexistent/path/token.json")
     try:
-        fetcher._get_credentials()
+        fetcher._refresh_token()
         assert False, "Expected FileNotFoundError"
     except FileNotFoundError:
         pass  # Expected
@@ -69,11 +64,11 @@ def test_fetcher_limits_results(monkeypatch):
     """GmailFetcher respects max_results parameter and caps at API maximum (500)."""
     from gmail_fetcher import GmailFetcher, GMAIL_API_MAX_RESULTS
 
-    # Test default cap
+    # Test default cap — exceeding 500 should be capped
     fetcher = GmailFetcher(max_results=1000)
-    assert fetcher.max_results == GMAIL_API_MAX_RESULTS  # Should be capped at 500
+    assert fetcher.max_results == GMAIL_API_MAX_RESULTS
 
-    # Test normal limit
+    # Test normal limit — under 500 should be preserved
     fetcher2 = GmailFetcher(max_results=25)
     assert fetcher2.max_results == 25
 
@@ -84,13 +79,12 @@ def test_fetcher_parses_email_fields():
     """parse_email extracts id, subject, sender, date, body, snippet from raw message."""
     from gmail_fetcher import GmailFetcher
 
-    # Build a minimal raw Gmail API message dict (base64url-encoded body)
     plain_text = "Hello, this is the email body content."
     encoded_body = base64.urlsafe_b64encode(plain_text.encode()).decode()
 
     raw_message = {
         "id": "msg-12345",
-        "snippet": "Hello, this is the ema…",
+        "snippet": "Hello, this is the ema\u2026",
         "payload": {
             "headers": [
                 {"name": "Subject", "value": "Test Subject Line"},
@@ -112,7 +106,7 @@ def test_fetcher_parses_email_fields():
     assert result["sender"] == "Alice <alice@example.com>"
     assert "Mon, 12 May 2026" in result["date"]
     assert result["body"] == plain_text
-    assert result["snippet"] == "Hello, this is the ema…"
+    assert result["snippet"] == "Hello, this is the ema\u2026"
 
 
 def test_fetcher_parses_multipart_email():
@@ -124,7 +118,7 @@ def test_fetcher_parses_multipart_email():
 
     raw_message = {
         "id": "msg-67890",
-        "snippet": "This is a multipart…",
+        "snippet": "This is a multipart\u2026",
         "payload": {
             "headers": [
                 {"name": "Subject", "value": "Multipart Test"},
@@ -159,7 +153,7 @@ def test_fetcher_parses_html_body():
 
     raw_message = {
         "id": "msg-html",
-        "snippet": "Hello world…",
+        "snippet": "Hello world\u2026",
         "payload": {
             "headers": [
                 {"name": "Subject", "value": "HTML Only"},

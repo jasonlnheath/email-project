@@ -6,6 +6,8 @@ import os
 import sys
 from pathlib import Path
 
+import pytest
+
 # Add project dir to path
 PROJECT_DIR = Path(__file__).parent
 sys.path.insert(0, str(PROJECT_DIR))
@@ -25,6 +27,43 @@ def load_tier1(path=None):
             if line.strip():
                 records.append(json.loads(line))
     return records
+
+
+@pytest.fixture
+def tier1_records():
+    """Load tier1.jsonl records for tests."""
+    return load_tier1()
+
+
+@pytest.fixture
+def summaries(tier1_records):
+    """Generate summaries from tier1 records for clustering tests."""
+    summarizer = Summarizer()
+    results = []
+    for email in tier1_records[:10]:
+        try:
+            summary = summarizer.summarize(email)
+        except Exception:
+            summary = {
+                "key_entities": [],
+                "action_items": [],
+                "sentiment": "neutral",
+            }
+        results.append({
+            "email_id": email.get("email_id", ""),
+            "subject": email.get("subject", ""),
+            "sender": email.get("sender", ""),
+            "date": email.get("date", ""),
+            "summary": f"{email.get('subject', '')}: {', '.join(summary.get('key_entities', []))}",
+            "content": email.get("content", ""),
+            "gmail_url": email.get("gmail_url", ""),
+            "key_entities": summary.get("key_entities", []),
+            "action_items": summary.get("action_items", []),
+            "sentiment": summary.get("sentiment", "neutral"),
+            "has_action_required": len(summary.get("action_items", [])) > 0,
+            "tier": "tier2",
+        })
+    return results
 
 
 def test_summarization(tier1_records, n=10):

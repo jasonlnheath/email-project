@@ -1,0 +1,42 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual env
+venv/
+.venv/
+
+# Generated data (rebuildable)
+tier1.jsonl
+tier2.jsonl
+tier3.jsonl
+cluster_store.jsonl
+latest_summary_results.json
+processed_ids.json
+.batch_cursor*.json
+checkpoint_*.json
+
+# Evaluation output
+evaluation_results.json
+evaluation_output/
+
+# Logs
+LOG.md
+*.log
+
+# Temporary/debug scripts
+_run_eval.py
+all_brief.py
+bulk_summarize.py
+daily_brief.py
+diag.py
+full_brief.py
+run_summarize.py
+show_latest.py
+onboarding/
+
+# OS files
+.DS_Store
+Thumbs.db
