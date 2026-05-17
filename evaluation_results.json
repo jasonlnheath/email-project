@@ -1,0 +1,47 @@
+{
+  "data_source": "gmail_api",
+  "n_emails_fetched": 50,
+  "fetch_timestamp": "2026-05-14T13:13:48.847478Z",
+  "tier_counts": {
+    "tier1_raw": 25,
+    "tier2_summarize": 25,
+    "tier3_aggregate": 0
+  },
+  "clustering": {
+    "n_clusters": 10,
+    "silhouette_score": 0.2233
+  },
+  "compression": {
+    "total_raw_chars": 151393,
+    "total_raw_tokens": 37848,
+    "tier2_summary_chars": 9806,
+    "tier2_summary_tokens": 2451,
+    "compression_ratio_tier2": 15.44
+  },
+  "context_utilization": {
+    "tier1_tokens": 8809,
+    "tier2_tokens": 2826,
+    "tier3_tokens": 250,
+    "system_overhead_tokens": 2000,
+    "total_estimated_tokens": 13885,
+    "max_context_tokens": 64000,
+    "utilization_pct": 21.7,
+    "within_budget": true
+  },
+  "retrieval_recall": {
+    "recall@k": 0.1,
+    "samples_analyzed": 10,
+    "entailed_count": 1
+  },
+  "status": "success",
+  "elapsed_seconds": 143.94,
+  "pipeline_summary": {
+    "emails_processed": 50,
+    "raw_tier_emails": 25,
+    "summarized_tier_emails": 25,
+    "clustered_into_groups": 10,
+    "compression_ratio_tier2": 15.44,
+    "context_utilization_pct": 21.7,
+    "retrieval_recall": 0.1
+  }
+}

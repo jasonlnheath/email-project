@@ -1,0 +1,46 @@
+{
+  "total_emails": 200,
+  "avg_composite_score": 0.563,
+  "avg_factual_consistency": 0.749,
+  "avg_entity_preservation": 0.268,
+  "avg_hallucination_rate": 0.556,
+  "avg_compression_ratio": 10.58,
+  "avg_semantic_similarity": 0.777,
+  "avg_action_item_preservation": 0.469,
+  "composite_score_distribution": {
+    "min": 0.409,
+    "max": 0.728,
+    "median": 0.55,
+    "std": 0.09
+  },
+  "compression_ratio_distribution": {
+    "min": 1.0,
+    "max": 55.25,
+    "median": 3.63,
+    "std": 14.28
+  },
+  "top_10_best": [
+    "EvaluationResult(email_id='19e0c935e20bdece', original_length=1108, summary_length=741, compression_ratio=1.7222222222222223, factual_consistency=np.float64(0.8944038731639026), entity_preservation=0.5, semantic_similarity=np.float64(0.9241872627284153), hallucination_rate=0.6923076923076923, action_item_preservation=1.0, sentiment_match=1.0, composite_score=np.float64(0.7281030975122792))",
+    "EvaluationResult(email_id='19e0c935e20bdece', original_length=1108, summary_length=741, compression_ratio=1.7222222222222223, factual_consistency=np.float64(0.8944038731639026), entity_preservation=0.5, semantic_similarity=np.float64(0.9241872627284153), hallucination_rate=0.6923076923076923, action_item_preservation=1.0, sentiment_match=1.0, composite_score=np.float64(0.7281030975122792))",
+    "EvaluationResult(email_id='19e0c935e20bdece', original_length=1108, summary_length=741, compression_ratio=1.7222222222222223, factual_consistency=np.float64(0.8944038731639026), entity_preservation=0.5, semantic_similarity=np.float64(0.9241872627284153), hallucination_rate=0.6923076923076923, action_item_preservation=1.0, sentiment_match=1.0, composite_score=np.float64(0.7281030975122792))",
+    "EvaluationResult(email_id='19e0c935e20bdece', original_length=1108, summary_length=741, compression_ratio=1.7222222222222223, factual_consistency=np.float64(0.8944038731639026), entity_preservation=0.5, semantic_similarity=np.float64(0.9241872627284153), hallucination_rate=0.6923076923076923, action_item_preservation=1.0, sentiment_match=1.0, composite_score=np.float64(0.7281030975122792))",
+    "EvaluationResult(email_id='19e0c935e20bdece', original_length=1108, summary_length=741, compression_ratio=1.7222222222222223, factual_consistency=np.float64(0.8944038731639026), entity_preservation=0.5, semantic_similarity=np.float64(0.9241872627284153), hallucination_rate=0.6923076923076923, action_item_preservation=1.0, sentiment_match=1.0, composite_score=np.float64(0.7281030975122792))",
+    "EvaluationResult(email_id='19e0c935e20bdece', original_length=1108, summary_length=741, compression_ratio=1.7222222222222223, factual_consistency=np.float64(0.8944038731639026), entity_preservation=0.5, semantic_similarity=np.float64(0.9241872627284153), hallucination_rate=0.6923076923076923, action_item_preservation=1.0, sentiment_match=1.0, composite_score=np.float64(0.7281030975122792))",
+    "EvaluationResult(email_id='19e0c935e20bdece', original_length=1108, summary_length=741, compression_ratio=1.7222222222222223, factual_consistency=np.float64(0.8944038731639026), entity_preservation=0.5, semantic_similarity=np.float64(0.9241872627284153), hallucination_rate=0.6923076923076923, action_item_preservation=1.0, sentiment_match=1.0, composite_score=np.float64(0.7281030975122792))",
+    "EvaluationResult(email_id='19e0c935e20bdece', original_length=1108, summary_length=741, compression_ratio=1.7222222222222223, factual_consistency=np.float64(0.8944038731639026), entity_preservation=0.5, semantic_similarity=np.float64(0.9241872627284153), hallucination_rate=0.6923076923076923, action_item_preservation=1.0, sentiment_match=1.0, composite_score=np.float64(0.7281030975122792))",
+    "EvaluationResult(email_id='19e0c935e20bdece', original_length=1108, summary_length=741, compression_ratio=1.7222222222222223, factual_consistency=np.float64(0.8944038731639026), entity_preservation=0.5, semantic_similarity=np.float64(0.9241872627284153), hallucination_rate=0.6923076923076923, action_item_preservation=1.0, sentiment_match=1.0, composite_score=np.float64(0.7281030975122792))",
+    "EvaluationResult(email_id='19e0c935e20bdece', original_length=1108, summary_length=741, compression_ratio=1.7222222222222223, factual_consistency=np.float64(0.8944038731639026), entity_preservation=0.5, semantic_similarity=np.float64(0.9241872627284153), hallucination_rate=0.6923076923076923, action_item_preservation=1.0, sentiment_match=1.0, composite_score=np.float64(0.7281030975122792))"
+  ],
+  "bottom_10_worst": [
+    "EvaluationResult(email_id='19e0bd16174f4a78', original_length=39307, summary_length=759, compression_ratio=55.25, factual_consistency=np.float64(0.6796277239979287), entity_preservation=0.08, semantic_similarity=np.float64(0.7343609764795628), hallucination_rate=0.8333333333333334, action_item_preservation=0.0, sentiment_match=1.0, composite_score=np.float64(0.409042463671313))",
+    "EvaluationResult(email_id='19e0bd16174f4a78', original_length=39307, summary_length=759, compression_ratio=55.25, factual_consistency=np.float64(0.6796277239979287), entity_preservation=0.08, semantic_similarity=np.float64(0.7343609764795628), hallucination_rate=0.8333333333333334, action_item_preservation=0.0, sentiment_match=1.0, composite_score=np.float64(0.409042463671313))",
+    "EvaluationResult(email_id='19e0bd16174f4a78', original_length=39307, summary_length=759, compression_ratio=55.25, factual_consistency=np.float64(0.6796277239979287), entity_preservation=0.08, semantic_similarity=np.float64(0.7343609764795628), hallucination_rate=0.8333333333333334, action_item_preservation=0.0, sentiment_match=1.0, composite_score=np.float64(0.409042463671313))",
+    "EvaluationResult(email_id='19e0bd16174f4a78', original_length=39307, summary_length=759, compression_ratio=55.25, factual_consistency=np.float64(0.6796277239979287), entity_preservation=0.08, semantic_similarity=np.float64(0.7343609764795628), hallucination_rate=0.8333333333333334, action_item_preservation=0.0, sentiment_match=1.0, composite_score=np.float64(0.409042463671313))",
+    "EvaluationResult(email_id='19e0bd16174f4a78', original_length=39307, summary_length=759, compression_ratio=55.25, factual_consistency=np.float64(0.6796277239979287), entity_preservation=0.08, semantic_similarity=np.float64(0.7343609764795628), hallucination_rate=0.8333333333333334, action_item_preservation=0.0, sentiment_match=1.0, composite_score=np.float64(0.409042463671313))",
+    "EvaluationResult(email_id='19e0bd16174f4a78', original_length=39307, summary_length=759, compression_ratio=55.25, factual_consistency=np.float64(0.6796277239979287), entity_preservation=0.08, semantic_similarity=np.float64(0.7343609764795628), hallucination_rate=0.8333333333333334, action_item_preservation=0.0, sentiment_match=1.0, composite_score=np.float64(0.409042463671313))",
+    "EvaluationResult(email_id='19e0bd16174f4a78', original_length=39307, summary_length=759, compression_ratio=55.25, factual_consistency=np.float64(0.6796277239979287), entity_preservation=0.08, semantic_similarity=np.float64(0.7343609764795628), hallucination_rate=0.8333333333333334, action_item_preservation=0.0, sentiment_match=1.0, composite_score=np.float64(0.409042463671313))",
+    "EvaluationResult(email_id='19e0bd16174f4a78', original_length=39307, summary_length=759, compression_ratio=55.25, factual_consistency=np.float64(0.6796277239979287), entity_preservation=0.08, semantic_similarity=np.float64(0.7343609764795628), hallucination_rate=0.8333333333333334, action_item_preservation=0.0, sentiment_match=1.0, composite_score=np.float64(0.409042463671313))",
+    "EvaluationResult(email_id='19e0bd16174f4a78', original_length=39307, summary_length=759, compression_ratio=55.25, factual_consistency=np.float64(0.6796277239979287), entity_preservation=0.08, semantic_similarity=np.float64(0.7343609764795628), hallucination_rate=0.8333333333333334, action_item_preservation=0.0, sentiment_match=1.0, composite_score=np.float64(0.409042463671313))",
+    "EvaluationResult(email_id='19e0bd16174f4a78', original_length=39307, summary_length=759, compression_ratio=55.25, factual_consistency=np.float64(0.6796277239979287), entity_preservation=0.08, semantic_similarity=np.float64(0.7343609764795628), hallucination_rate=0.8333333333333334, action_item_preservation=0.0, sentiment_match=1.0, composite_score=np.float64(0.409042463671313))"
+  ]
+}

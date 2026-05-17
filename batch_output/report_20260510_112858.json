@@ -1,0 +1,156 @@
+{
+  "total_emails": 5,
+  "avg_composite_score": 0.56,
+  "avg_factual_consistency": 0.742,
+  "avg_entity_preservation": 0.282,
+  "avg_hallucination_rate": 0.522,
+  "avg_compression_ratio": 8.35,
+  "avg_semantic_similarity": 0.777,
+  "avg_action_item_preservation": 0.39,
+  "composite_score_distribution": {
+    "min": 0.426,
+    "max": 0.659,
+    "median": 0.562,
+    "std": 0.085
+  },
+  "compression_ratio_distribution": {
+    "min": 1.15,
+    "max": 30.46,
+    "median": 3.79,
+    "std": 11.11
+  },
+  "top_10_best": [
+    {
+      "email_id": "19e12500291c84ee",
+      "original_length": 4971,
+      "summary_length": 200,
+      "compression_ratio": 2.25,
+      "factual_consistency": 0.59323597688075,
+      "entity_preservation": 0.3333333333333333,
+      "semantic_similarity": 0.6507388241771328,
+      "hallucination_rate": 0.0,
+      "action_item_preservation": 1.0,
+      "sentiment_match": 1.0,
+      "composite_score": 0.6589149500241283
+    },
+    {
+      "email_id": "19e11f48ef019d47",
+      "original_length": 1032,
+      "summary_length": 976,
+      "compression_ratio": 1.146067415730337,
+      "factual_consistency": 0.8068569334708136,
+      "entity_preservation": 0.5,
+      "semantic_similarity": 0.8343791138598776,
+      "hallucination_rate": 0.8571428571428571,
+      "action_item_preservation": 0.75,
+      "sentiment_match": 1.0,
+      "composite_score": 0.6386425185487972
+    },
+    {
+      "email_id": "19e12114cfa5226d",
+      "original_length": 2480,
+      "summary_length": 765,
+      "compression_ratio": 3.787878787878788,
+      "factual_consistency": 0.8445964061429784,
+      "entity_preservation": 0.2916666666666667,
+      "semantic_similarity": 0.8718616351523458,
+      "hallucination_rate": 0.7647058823529411,
+      "action_item_preservation": 0.2,
+      "sentiment_match": 1.0,
+      "composite_score": 0.562368951429471
+    },
+    {
+      "email_id": "19e10431aec77788",
+      "original_length": 2503,
+      "summary_length": 882,
+      "compression_ratio": 4.115384615384615,
+      "factual_consistency": 0.8105195179209029,
+      "entity_preservation": 0.23076923076923078,
+      "semantic_similarity": 0.838016207454505,
+      "hallucination_rate": 0.5714285714285714,
+      "action_item_preservation": 0.0,
+      "sentiment_match": 0.5,
+      "composite_score": 0.5158363084724686
+    },
+    {
+      "email_id": "19e11df19f712615",
+      "original_length": 22582,
+      "summary_length": 673,
+      "compression_ratio": 30.46153846153846,
+      "factual_consistency": 0.6541595434354306,
+      "entity_preservation": 0.05454545454545454,
+      "semantic_similarity": 0.6907748660362539,
+      "hallucination_rate": 0.4166666666666667,
+      "action_item_preservation": 0.0,
+      "sentiment_match": 0.5,
+      "composite_score": 0.42600045657243085
+    }
+  ],
+  "bottom_10_worst": [
+    {
+      "email_id": "19e11df19f712615",
+      "original_length": 22582,
+      "summary_length": 673,
+      "compression_ratio": 30.46153846153846,
+      "factual_consistency": 0.6541595434354306,
+      "entity_preservation": 0.05454545454545454,
+      "semantic_similarity": 0.6907748660362539,
+      "hallucination_rate": 0.4166666666666667,
+      "action_item_preservation": 0.0,
+      "sentiment_match": 0.5,
+      "composite_score": 0.42600045657243085
+    },
+    {
+      "email_id": "19e10431aec77788",
+      "original_length": 2503,
+      "summary_length": 882,
+      "compression_ratio": 4.115384615384615,
+      "factual_consistency": 0.8105195179209029,
+      "entity_preservation": 0.23076923076923078,
+      "semantic_similarity": 0.838016207454505,
+      "hallucination_rate": 0.5714285714285714,
+      "action_item_preservation": 0.0,
+      "sentiment_match": 0.5,
+      "composite_score": 0.5158363084724686
+    },
+    {
+      "email_id": "19e12114cfa5226d",
+      "original_length": 2480,
+      "summary_length": 765,
+      "compression_ratio": 3.787878787878788,
+      "factual_consistency": 0.8445964061429784,
+      "entity_preservation": 0.2916666666666667,
+      "semantic_similarity": 0.8718616351523458,
+      "hallucination_rate": 0.7647058823529411,
+      "action_item_preservation": 0.2,
+      "sentiment_match": 1.0,
+      "composite_score": 0.562368951429471
+    },
+    {
+      "email_id": "19e11f48ef019d47",
+      "original_length": 1032,
+      "summary_length": 976,
+      "compression_ratio": 1.146067415730337,
+      "factual_consistency": 0.8068569334708136,
+      "entity_preservation": 0.5,
+      "semantic_similarity": 0.8343791138598776,
+      "hallucination_rate": 0.8571428571428571,
+      "action_item_preservation": 0.75,
+      "sentiment_match": 1.0,
+      "composite_score": 0.6386425185487972
+    },
+    {
+      "email_id": "19e12500291c84ee",
+      "original_length": 4971,
+      "summary_length": 200,
+      "compression_ratio": 2.25,
+      "factual_consistency": 0.59323597688075,
+      "entity_preservation": 0.3333333333333333,
+      "semantic_similarity": 0.6507388241771328,
+      "hallucination_rate": 0.0,
+      "action_item_preservation": 1.0,
+      "sentiment_match": 1.0,
+      "composite_score": 0.6589149500241283
+    }
+  ]
+}

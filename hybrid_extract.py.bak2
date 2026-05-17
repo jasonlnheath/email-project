@@ -1,0 +1,282 @@
+#!/usr/bin/env python3
+"""Hybrid email summarizer: regex for entities, LLM for purpose."""
+import json
+import re
+import sys
+from pathlib import Path
+from urllib.request import Request, urlopen
+
+BASE = Path(__file__).parent
+
+
+# ---------------------------------------------------------------------------
+# Phase 1: Script-based entity extraction
+# ---------------------------------------------------------------------------
+
+def extract_entities(body):
+    """Extract structured entities using regex/heuristics. Fast and reliable."""
+    entities = {
+        "names": [],
+        "amounts": [],
+        "dates": [],
+        "urls": [],
+        "phones": [],
+    }
+    
+    # URLs (including www.)
+    url_pattern = r'https?://[^\s<>"\')]+|www\.[^\s<>"\')]+'
+    urls = re.findall(url_pattern, body)
+    if urls:
+        entities["urls"] = list(set(urls))[:10]
+    
+    # Phone numbers (various formats)
+    phone_patterns = [
+        r'\b\d{3}[-.\s]\d{3}[-.\s]\d{4}\b',
+        r'\(\d{3}\)\s*\d{3}[-.\s]\d{4}\b',
+        r'\b\d{10}\b',
+        r'\+?1?[-.\s]?\(?\\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b',
+    ]
+    phones = []
+    for pat in phone_patterns:
+        phones.extend(re.findall(pat, body))
+    if phones:
+        entities["phones"] = list(set(phones))[:5]
+    
+    # Monetary amounts ($X,XXX.XX or $X)
+    amount_pattern = r'\$[\d,]+(?:\.\d{2})?'
+    amounts = re.findall(amount_pattern, body)
+    if amounts:
+        entities["amounts"] = list(set(amounts))[:10]
+    
+    # Dates (various formats)
+    date_patterns = [
+        r'\b(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2}(?:st|nd|rd|th)?(?:,\s*\d{4})?\b',
+        r'\b\d{1,2}/\d{1,2}(?:/\d{2,4})?\b',
+        r'\b\d{4}-\d{2}-\d{2}\b',
+        r'\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{1,2},?\s*\d{4}\b',
+    ]
+    dates = []
+    for pat in date_patterns:
+        dates.extend(re.findall(pat, body))
+    if dates:
+        entities["dates"] = list(set(dates))[:10]
+    
+    # Person names (capitalized words that look like names)
+    name_pattern = r'\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,2})\b'
+    candidate_names = re.findall(name_pattern, body)
+    skip_words = {
+        'The', 'And', 'For', 'From', 'With', 'This', 'That', 'These', 'Those',
+        'Your', 'Our', 'Their', 'Such', 'Each', 'Every', 'Both', 'Much',
+        'Good', 'Great', 'Best', 'Thank', 'Thanks', 'Please', 'Any',
+        'All', 'New', 'Next', 'Last', 'First', 'Second', 'Third',
+        'Today', 'Tomorrow', 'Yesterday', 'Monday', 'Tuesday', 'Wednesday',
+        'Thursday', 'Friday', 'Saturday', 'Sunday', 'January', 'February',
+        'March', 'April', 'May', 'June', 'July', 'August', 'September',
+        'October', 'November', 'December', 'Canvas', 'Gmail', 'Google',
+        'Apple', 'Amazon', 'Microsoft', 'Netflix', 'Uber', 'Airbnb',
+        'Hi', 'Hello', 'Hey', 'Dear', 'Greetings', 'Welcome',
+    }
+    names = [n for n in candidate_names if n not in skip_words and len(n) > 3]
+    if names:
+        entities["names"] = list(set(names))[:10]
+    
+    return entities
+
+
+def extract_action_items(body):
+    """Extract action items using heuristics."""
+    actions = []
+    
+    # Patterns that indicate action required
+    action_patterns = [
+        r'(?i)(?:please|kindly|could you|would you)\s+([^.!?]+)',
+        r'(?i)(?:need to|should|must|have to)\s+(?:to\s+)?([^.!?]+)',
+        r'(?i)(?:action item|todo|next step|follow up)[:\s]+([^.!?]+)',
+        r'(?i)(?:remind(?:er)?\s+(?:me|you|us))\s+([^.!?]+)',
+        r'(?i)(?:don\'t forget|remember to)\s+([^.!?]+)',
+    ]
+    
+    for pat in action_patterns:
+        matches = re.findall(pat, body)
+        for m in matches:
+            action = m.strip()
+            if len(action) > 10 and action not in actions:
+                actions.append(action)
+    
+    return actions[:5]
+
+
+def extract_subject_keywords(subject):
+    """Extract meaningful keywords from subject line."""
+    cleaned = re.sub(r'^(re|fw|fwd| fwd|RE:|FW:|FWD:)\s*', '', subject, flags=re.IGNORECASE)
+    # Only remove em-dash/en-dash suffixes (not regular hyphens which may be part of content)
+    cleaned = re.sub(r'\s*[–—]\s*.*$', '', cleaned)
+    
+    stop_words = {
+        'the', 'and', 'for', 'with', 'this', 'that', 'your', 'our',
+        'from', 'have', 'been', 'will', 'just', 'more', 'most',
+        'also', 'very', 'than', 'then', 'they', 'them', 'their',
+        'about', 'which', 'there', 'these', 'those', 'would',
+        'should', 'could', 'after', 'before', 'between', 'through',
+        'during', 'without', 'within', 'along', 'around', 'below',
+        # Low-value adjectives that add little search value
+        'quick', 'brown', 'good', 'great', 'new', 'other', 'such',
+    }
+    words = [w.lower() for w in re.findall(r'\b\w{3,}\b', cleaned) if w.lower() not in stop_words]
+    return list(dict.fromkeys(words))
+
+
+# ---------------------------------------------------------------------------
+# Phase 2: LLM for purpose only (extract answer from reasoning)
+# ---------------------------------------------------------------------------
+
+def extract_answer_from_reasoning(reasoning_text):
+    """Extract just the final answer from a reasoning model's output."""
+    if not reasoning_text:
+        return ""
+    
+    # Strategy 1: Look for "Draft X:" pattern
+    draft_match = re.search(r'Draft\s+\d+:\s*(.+?)(?:\n\s*-|\n\d+\.\s|$)', reasoning_text, re.DOTALL)
+    if draft_match:
+        answer = draft_match.group(1).strip()
+        answer = re.sub(r'^[–—•*]\s*', '', answer)
+        answer = re.sub(r'\*\*(.+?)\*\*', r'\1', answer)
+        return answer[:200]
+    
+    # Strategy 2: Look for "Final Polish:" or "Final Output:" patterns
+    final_match = re.search(
+        r'Final\s+(?:Polish|Output|Summary)[:\s]+(.+?)(?:\n\n|\n\d+\.\s|$)',
+        reasoning_text, re.DOTALL
+    )
+    if final_match:
+        answer = final_match.group(1).strip()
+        answer = re.sub(r'^[–—•*]\s*', '', answer)
+        answer = re.sub(r'\*\*(.+?)\*\*', r'\1', answer)
+        answer = re.sub(r'[✅✔️]', '', answer).strip()
+        quote_match = re.match(r'["\u201c](.+?)["\u201d]', answer)
+        if quote_match:
+            answer = quote_match.group(1)
+        return answer[:200]
+    
+    # Strategy 3: Look for sentences starting with "This email" or "The sender"
+    sentences = re.split(r'(?<=[.!?])\s+', reasoning_text)
+    for s in reversed(sentences):
+        s = s.strip().lstrip('-').lstrip('•').lstrip('*').strip()
+        if len(s) > 30 and (s.startswith('This email') or s.startswith('The sender') or s.startswith('The email')):
+            return s[:200]
+    
+    # Strategy 4: Extract content from the last numbered step
+    steps = list(re.finditer(r'(\d+)\.\s+(.+?)(?=\n\d+\.\s|$)', reasoning_text, re.DOTALL))
+    if steps:
+        last_step = steps[-1].group(2).strip()
+        sub_sentences = re.split(r'(?<=[.!?])\s+', last_step)
+        for s in reversed(sub_sentences):
+            s = s.strip().lstrip('-').lstrip('•').lstrip('*').strip()
+            if len(s) > 30 and (s.startswith('This email') or s.startswith('The sender') or s.startswith('The email')):
+                return s[:200]
+    
+    # Strategy 5: Catch-all
+    all_parts = re.split(r'[\n\r]+', reasoning_text)
+    for part in reversed(all_parts):
+        part = part.strip().lstrip('-').lstrip('•').lstrip('*').strip()
+        if len(part) > 30 and (part.startswith('This email') or part.startswith('The email') or part.startswith('The sender')):
+            part = re.sub(r'^["\u201c]', '', part)
+            return part[:200]
+    
+    # Strategy 6: Find the last "This email...[period]" pattern
+    matches = list(re.finditer(r'(This email[^.]+.)', reasoning_text))
+    if matches:
+        last_match = matches[-1].group(1).strip()
+        return last_match[:200]
+    
+    return reasoning_text.strip()[:200]
+
+
+def get_llm_summary(subject, body):
+    """Ask LLM for a simple one-sentence summary."""
+    prompt = f"Subject: {subject}\n\nBody: {body[:3000]}\n\nOne sentence: What is this email about?"
+    
+    body_len = len(body)
+    if body_len < 1000:
+        max_tok = 512
+    elif body_len < 3000:
+        max_tok = 1024
+    else:
+        max_tok = 2048
+    
+    payload = {
+        "model": "Qwen3.6-35B-A3B-UD-Q4_K_M.gguf",
+        "messages": [
+            {"role": "user", "content": prompt},
+        ],
+        "max_tokens": max_tok,
+        "temperature": 0.1,
+    }
+    
+    req = Request("http://localhost:8080/v1/chat/completions",
+                  data=json.dumps(payload).encode(),
+                  headers={"Content-Type": "application/json"},
+                  method="POST")
+    
+    try:
+        with urlopen(req, timeout=120) as resp:
+            result = json.loads(resp.read().decode())
+            msg = result["choices"][0]["message"]
+            reasoning = msg.get("reasoning_content") or msg.get("content", "")
+            return extract_answer_from_reasoning(reasoning)
+    except Exception as e:
+        print(f"LLM error: {e}", file=sys.stderr)
+        return ""
+
+
+# ---------------------------------------------------------------------------
+# Main pipeline
+# ---------------------------------------------------------------------------
+
+def process_email(eid, subject, body):
+    """Process one email through hybrid pipeline."""
+    entities = extract_entities(body)
+    action_items = extract_action_items(body)
+    keywords = extract_subject_keywords(subject)
+    summary = get_llm_summary(subject, body)
+    
+    return {
+        "email_id": eid,
+        "subject": subject,
+        "summary_purpose": summary,
+        "summary_key_details": [f"{k}: {', '.join(v)}" for k, v in entities.items() if v][:5],
+        "summary_entities": entities,
+        "summary_sentiment": "neutral",
+        "summary_action_required": len(action_items) > 0,
+        "summary_action_items": action_items,
+        "original_length": len(body),
+    }
+
+
+def main():
+    """Process a batch of emails."""
+    cache_path = BASE / 'email_bodies_cache.json'
+    with open(cache_path) as f:
+        cache = json.load(f)
+    
+    print(f"Loaded {len(cache)} cached emails")
+    
+    n = int(sys.argv[1]) if len(sys.argv) > 1 else 5
+    
+    results = []
+    for i, (eid, data) in enumerate(cache.items()):
+        subject = data.get('subject', '')
+        body = data.get('body', '')
+        
+        if not body or len(body) < 20:
+            continue
+        
+        print(f"[{i+1}/{n}] Processing {eid[:8]}... ({len(body)} chars)", flush=True)
+        result = process_email(eid, subject, body)
+        results.append(result)
+        
+        entities = result['summary_entities']
+        has_content = any(entities[k] for k in ['names', 'amounts', 'dates', 'urls', 'phones'])
+        print(f"  Summary: {result['summary_purpose'][:80]}")
+        print(f"  Entities: names={len(entities['names'])}, amounts={len(entities['amounts'])}, "
+              f"dates={len(entities['dates'])}, urls={len(entity...[truncated]

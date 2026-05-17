@@ -1,0 +1,21 @@
+{
+  "clustering": {
+    "n_clusters": 10,
+    "silhouette_score": 0.1464
+  },
+  "compression": {
+    "total_raw_chars": 180301,
+    "tier2_summary_tokens": 72,
+    "compression_ratio_tier2": 4.38
+  },
+  "context_utilization": {
+    "tier1_tokens": 315,
+    "tier2_tokens": 72,
+    "tier3_tokens": 3,
+    "system_overhead_tokens": 2000,
+    "total_estimated_tokens": 2390,
+    "max_context_tokens": 64000,
+    "utilization_pct": 3.73,
+    "within_budget": true
+  }
+}

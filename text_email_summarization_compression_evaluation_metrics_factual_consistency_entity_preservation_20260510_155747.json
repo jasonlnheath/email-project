@@ -1,0 +1,27 @@
+[
+  {
+    "title": "Stress Testing Factual Consistency Metrics for Long-Document Summarization",
+    "href": "https://arxiv.org/html/2511.07689",
+    "body": "2 weeks ago - Building on this foundation, we apply a stress-testing methodology established in previous work Ramprasad and Wallace (2024) to six widely-used reference-free metrics (§ 4) across seven factuality-preserving perturbations reflecting realistic long‑form summarization phenomena. These perturbations (§ 3.1) broadly cover paraphrasing operations, simplification of complex constructions, synonym replacement, reduced lexical diversity, logically equivalent negations, further compression of the summary, and insertion of unrelated source sentences."
+  },
+  {
+    "title": "Evaluating LLMs for Text Summarization: An Introduction",
+    "href": "https://www.sei.cmu.edu/blog/evaluating-llms-for-text-summarization-introduction/",
+    "body": "April 7, 2025 - Faithfulness measures the consistency of the output summary with the input article. Faithfulness metrics to some extent capture any hallucinations output by the LLM. Compression measures how much compression has been achieved via summarization."
+  },
+  {
+    "title": "[2511.07689] Stress Testing Factual Consistency Metrics for Long-Document Summarization",
+    "href": "https://arxiv.org/abs/2511.07689",
+    "body": "November 10, 2025 - We probe metric robustness through seven factuality-preserving perturbations applied to summaries, namely paraphrasing, simplification, synonym replacement, logically equivalent negations, vocabulary reduction, compression, and source text insertion..."
+  },
+  {
+    "title": "A Comparative Study of Quality Evaluation Methods for Text Summarization",
+    "href": "https://arxiv.org/html/2407.00747v1",
+    "body": "June 30, 2024 - Current works consider multiple dimensions to evaluate summary quality, including readability (ease of reading), fluency (grammaticality), consistency (factual support from the input document), faithfulness (completeness of information from the input document), relevance (selection of important ..."
+  },
+  {
+    "title": "Factual consistency evaluation of summarization in the Era of large language models - ScienceDirect",
+    "href": "https://www.sciencedirect.com/science/article/pii/S0957417424013228",
+    "body": "June 8, 2024 - Factual consistency evaluation in text summarization. Existing FC evaluation methods approach the problem in a number of different ways. Previous studies tried to determine the level of consistency by comparing the overlap between either entities (Nan et al., 2021) or relation tuples (Goodrich et al., 2019) extracted from automatically generated and ground truth summaries"
+  }
+]

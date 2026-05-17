@@ -1,0 +1,21 @@
+{
+  "benchmark_date": "2026-05-12 09:55:43",
+  "total_records": 1434,
+  "records_with_content": 1434,
+  "empty_records": 0,
+  "queries_tested": 16328,
+  "metrics": {
+    "recall@5": 0.6584,
+    "precision@5": 0.1317,
+    "recall@1": 0.6584,
+    "avg_latency_ms": 0.95
+  },
+  "by_source": {
+    "purpose": 0.3713,
+    "subject": 0.6219,
+    "entity_amount": 0.578,
+    "entity_name": 0.7194,
+    "entity_date": 0.6064,
+    "entity_url": 0.9744
+  }
+}
