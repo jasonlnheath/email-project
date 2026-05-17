@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+*.bak
+auth.db
+users.json
+google_token.json
+tests/tmp_test/
+.heroku/

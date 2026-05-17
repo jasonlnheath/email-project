@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Inbox Dashboard</title>
+    <style>
+        :root {
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text-primary: #333333;
+            --text-secondary: #555555;
+            --text-muted: #999999;
+            --border-color: #eeeeee;
+            --header-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --summary-bg: #f8f9ff;
+            --toast-bg: #333333;
+            --btn-read-bg: #e8f5e9;
+            --btn-read-text: #2e7d32;
+            --btn-defer-bg: #fff3e0;
+            --btn-defer-text: #ef6c00;
+            --btn-delete-bg: #ffebee;
+            --btn-delete-text: #c62828;
+            --btn-open-bg: #e8eaf6;
+            --btn-open-text: #283593;
+            --card-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            --header-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .dark {
+            --bg: #1a1a2e;
+            --card-bg: #16213e;
+            --text-primary: #e0e0e0;
+            --text-secondary: #b0b0b0;
+            --text-muted: #707070;
+            --border-color: #2a2a4a;
+            --header-bg: linear-gradient(135deg, #0f3460 0%, #533483 100%);
+            --summary-bg: #1f2940;
+            --toast-bg: #e0e0e0;
+            --btn-read-bg: #1b3a2a;
+            --btn-read-text: #66bb6a;
+            --btn-defer-bg: #3a2a1b;
+            --btn-defer-text: #ffb74d;
+            --btn-delete-bg: #3a1b1b;
+            --btn-delete-text: #ef5350;
+            --btn-open-bg: #1b2a3a;
+            --btn-open-text: #64b5f6;
+            --card-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --header-shadow: 0 2px 8px rgba(0,0,0,0.4);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            line-height: 1.5;
+            -webkit-tap-highlight-color: transparent;
+            min-height: 100vh;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        .header {
+            background: var(--header-bg);
+            color: white;
+            padding: 12px 16px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--header-shadow);
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 0;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .header-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+        .header-btn:hover { background: rgba(255,255,255,0.3); }
+
+        .email-count {
+            font-size: 12px;
+            opacity: 0.85;
+            margin-top: 4px;
+        }
+
+        .container { padding: 12px; max-width: 700px; margin: 0 auto; }
+
+        /* ── Card base ─────────────────────────────────────────── */
+        .email-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            margin-bottom: 10px;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+
+        /* Priority-based left border colors */
+        .tier-VIP_HIGH   { border-left: 5px solid #FFB300; }  /* Gold — VIP */
+        .tier-HIGH       { border-left: 5px solid #E53935; }  /* Red — High priority */
+        .tier-MEDIUM     { border-left: 5px solid #7C4DFF; }  /* Purple — Medium */
+        .tier-LOW        { border-left: 5px solid #90A4AE; }  /* Gray — Low / junk */
+
+        /* ── Card header (always visible) ──────────────────────── */
+        .card-header {
+            padding: 12px 16px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .card-header:active { background: var(--summary-bg); }
+
+        /* ── Collapse chevron ─────────────────────────────────── */
+        .card-chevron {
+            font-size: 12px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: transform 0.3s ease, color 0.2s ease;
+            flex-shrink: 0;
+            padding: 4px;
+            line-height: 1;
+        }
+        .card-chevron:hover { color: var(--text-primary); }
+        .email-card.collapsed .card-chevron { transform: rotate(-90deg); }
+
+        /* ── Collapsible body (summary + actions) ─────────────── */
+        .email-card.collapsed .summary-section,
+        .email-card.collapsed .card-actions {
+            max-height: 0 !important;
+            overflow: hidden !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            margin: 0 !important;
+            opacity: 0;
+            transition: max-height 0.35s ease, opacity 0.25s ease, padding 0.35s ease, margin 0.35s ease;
+        }
+
+        .summary-section,
+        .card-actions {
+            transition: max-height 0.35s ease, opacity 0.25s ease, padding 0.35s ease, margin 0.35s ease;
+        }
+
+        .card-info { flex: 1; min-width: 0; }
+
+        .card-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 3px;
+        }
+
+        .tier-badge {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            flex-shrink: 0;
+        }
+        .tier-VIP_HIGH   { background: #FFF8E1; color: #F57F17; }
+        .tier-HIGH       { background: #FFEBEE; color: #C62828; }
+        .tier-MEDIUM     { background: #EDE7F6; color: #512DA8; }
+        .tier-LOW        { background: #ECEFF1; color: #607D8B; }
+
+        .dark .tier-VIP_HIGH   { background: #3a3000; color: #FFD54F; }
+        .dark .tier-HIGH       { background: #3a0000; color: #EF5350; }
+        .dark .tier-MEDIUM     { background: #1a0033; color: #B388FF; }
+        .dark .tier-LOW        { background: #2a2a2a; color: #90A4AE; }
+
+        .vip-badge {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            background: linear-gradient(135deg, #FFD700, #FFA000);
+            color: #4A3000;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .card-from {
+            font-weight: 600;
+            font-size: 15px;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-subject {
+            font-size: 14px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-date {
+            font-size: 12px;
+            color: var(--text-muted);
+            flex-shrink: 0;
+            text-align: right;
+            padding-top: 2px;
+        }
+
+        /* ── Summary (always visible) ──────────────────────────── */
+        .summary-section {
+            padding: 0 16px 10px;
+        }
+
+        .summary-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #888;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .summary-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.55;
+            background: var(--summary-bg);
+            border-radius: 8px;
+            padding: 10px 12px;
+            border-left: 3px solid #667eea;
+        }
+
+        /* Unsubscribe link */
+        .unsubscribe-link {
+            display: inline-block;
+            margin-top: 6px;
+            font-size: 11px;
+            color: #90A4AE;
+            text-decoration: underline;
+            word-break: break-all;
+        }
+        .unsubscribe-link:hover { color: #607D8B; }
+
+        .unsubscribe-inline {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 4px;
+            background: var(--summary-bg);
+            color: var(--text-muted);
+            font-size: 11px;
+            text-decoration: none;
+            margin-top: 4px;
+            transition: background 0.2s, color 0.2s;
+        }
+        .unsubscribe-inline:hover {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        /* ── Action buttons (always visible) ───────────────────── */
+        .card-actions {
+            padding: 8px 16px 12px;
+            display: flex;
+            gap: 8px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 8px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-align: center;
+            min-width: 0;
+            font-family: inherit;
+        }
+        .btn:active { transform: scale(0.96); opacity: 0.8; }
+
+        .btn-read   { background: var(--btn-read-bg); color: var(--btn-read-text); }
+        .btn-defer  { background: var(--btn-defer-bg); color: var(--btn-defer-text); }
+        .btn-delete { background: var(--btn-delete-bg); color: var(--btn-delete-text); }
+        .btn-open   { background: var(--btn-open-bg); color: var(--btn-open-text); flex: 2; }
+
+        .btn.loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        /* ── Empty state ───────────────────────────────────────── */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+        .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+        .empty-state p { font-size: 16px; }
+
+        /* ── Loading spinner ───────────────────────────────────── */
+        .spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(102,126,234,0.3);
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            vertical-align: middle;
+            margin-right: 4px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Toast notification ────────────────────────────────── */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--toast-bg);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 200;
+            transition: transform 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        .dark .toast { color: #333; }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+
+        /* ── Category sub-badges ───────────────────────────────── */
+        .school-badge, .newsletter-badge {
+            display: inline-block;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .school-badge   { background: #e3f2fd; color: #1565c0; }
+        .newsletter-badge { background: #fff3e0; color: #e65100; }
+
+        .dark .school-badge   { background: #0d2b47; color: #64b5f6; }
+        .dark .newsletter-badge { background: #3a2a1b; color: #ffb74d; }
+
+        /* ── Login page ────────────────────────────────────────── */
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 20px;
+        }
+
+        .login-form {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .login-title {
+            font-size: 24px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 24px;
+            color: var(--text-primary);
+        }
+
+        .login-field {
+            margin-bottom: 16px;
+        }
+
+        .login-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--text-secondary);
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 16px;
+            background: var(--bg);
+            color: var(--text-primary);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--header-bg);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .login-error {
+            color: #c62828;
+            font-size: 14px;
+            text-align: center;
+            margin-top: 12px;
+            display: none;
+        }
+
+        .user-info {
+            font-size: 12px;
+            opacity: 0.85;
+            margin-top: 2px;
+        }
+    </style>
+    <script>
+        // Prevent FOUC: apply dark mode before first paint
+        (function() {
+            if (localStorage.getItem('dashboard-dark-mode') === '1') {
+                document.documentElement.classList.add('dark');
+                document.body.classList.add('dark');
+            }
+        })();
+    </script>
+</head>
+<body>
+    <div class="header">
+        <div class="header-top">
+            <div>
+                <div class="header-title" id="header-title">📧 My Inbox</div>
+                <div class="user-info" id="user-info"></div>
+            </div>
+            <div class="header-controls">
+                <button class="header-btn" id="dark-toggle" onclick="toggleDarkMode()" style="display:none;">🌙 Dark</button>
+                <button class="header-btn" id="logout-btn" onclick="logout()" style="display:none;">Logout</button>
+                <button class="header-btn" onclick="reloadEmails()">↻ Refresh</button>
+            </div>
+        </div>
+        <div class="email-count" id="email-count">__COUNT__ unread emails</div>
+    </div>
+
+    <!-- Login form (shown when not authenticated) -->
+    <div class="login-container" id="login-container" style="display:none;">
+        <div class="login-form">
+            <div class="login-title">🔐 Login</div>
+            <form onsubmit="handleLogin(event)">
+                <div class="login-field">
+                    <label class="login-label" for="username">Username</label>
+                    <input type="text" id="username" class="login-input" required autocomplete="username">
+                </div>
+                <div class="login-field">
+                    <label class="login-label" for="password">Password</label>
+                    <input type="password" id="password" class="login-input" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="login-btn">Login</button>
+                <div class="login-error" id="login-error"></div>
+            </form>
+        </div>
+    </div>
+
+    <div class="container" id="email-list"></div>
+
+    <div class="toast" id="toast"></div>
+
+    <script type="application/json" id="email-data">__EMAILS_JSON__</script>
+    <script type="application/json" id="auth-data">__AUTH_USER__</script>
+    <script>
+        // ── Auth state ──────────────────────────────────────────────
+        const authUser = JSON.parse(document.getElementById('auth-data').textContent);
+        const isLoggedIn = !!authUser;
+        
+        if (isLoggedIn) {
+            document.getElementById('user-info').textContent = `Logged in as ${authUser.username}`;
+            document.getElementById('logout-btn').style.display = 'inline-block';
+            document.getElementById('dark-toggle').style.display = 'inline-block';
+        } else {
+            document.getElementById('login-container').style.display = 'block';
+            document.getElementById('email-list').style.display = 'none';
+        }
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorEl = document.getElementById('login-error');
+            
+            try {
+                const resp = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password }),
+                    credentials: 'include'
+                });
+                
+                const data = await resp.json();
+                
+                if (data.success) {
+                    window.location.href = "/login";
+                } else {
+                    errorEl.textContent = data.error || 'Login failed';
+                    errorEl.style.display = 'block';
+                }
+            } catch (err) {
+                errorEl.textContent = 'Network error';
+                errorEl.style.display = 'block';
+            }
+        }
+
+        async function logout() {
+            try {
+                await fetch('/api/logout', { method: 'GET', credentials: 'include' });
+                window.location.href = "/login";
+            } catch (err) {
+                showToast('❌ Logout failed');
+            }
+        }
+
+        // ── Collapse/expand email cards ──────────────────────────
+        function toggleCard(cardId) {
+            const card = document.getElementById('card-' + cardId);
+            if (!card) return;
+            card.classList.toggle('collapsed');
+        }
+
+        // ── Popup Gmail links ──────────────────────────────────────
+        function openPopup(url) {
+            if (!url) return;
+            const width = 1024;
+            const height = 768;
+            const left = (window.screen.width - width) / 2;
+            const top = (window.screen.height - height) / 2;
+            window.open(
+                url,
+                'gmail-popup',
+                `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
+            );
+        }
+
+        // ── Dark mode ──────────────────────────────────────────────
+        function toggleDarkMode() {
+            const isDark = !document.body.classList.contains('dark');
+            document.body.classList.toggle('dark');
+            document.documentElement.classList.toggle('dark');
+            localStorage.setItem('dashboard-dark-mode', isDark ? '1' : '0');
+            document.getElementById('dark-toggle').textContent = isDark ? '☀️ Light' : '🌙 Dark';
+            // Show button on first toggle if hidden (user just logged in)
+            document.getElementById('dark-toggle').style.display = 'inline-block';
+        }
+
+        // Restore dark mode preference on load (consistent with FOUC prevention)
+        (function() {
+            if (localStorage.getItem('dashboard-dark-mode') === '1') {
+                document.body.classList.add('dark');
+                document.documentElement.classList.add('dark');
+                const toggleBtn = document.getElementById('dark-toggle');
+                if (toggleBtn) {
+                    toggleBtn.textContent = '☀️ Light';
+                }
+            }
+        })();
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            const d = new Date(dateStr);
+            const now = new Date();
+            const diffMs = now - d;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            if (diffMins < 1) return 'Just now';
+            if (diffMins < 60) return `${diffMins}m ago`;
+            if (diffHours < 24) return `${diffHours}h ago`;
+            if (diffDays < 7) return `${diffDays}d ago`;
+            return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+
+        async function loadSummary(emailId) {
+            const card = document.getElementById(`card-${emailId}`);
+            if (!card) return;
+
+            // Already has a summary — nothing to do
+            if (card.querySelector('.summary-text')) return;
+
+            const section = card.querySelector('.summary-section');
+            section.innerHTML = '<div class="spinner"></div> Loading summary...';
+
+            try {
+                const resp = await fetch(`/api/summary/${emailId}`, { 
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                const data = await resp.json();
+
+                if (data.error) {
+                    section.innerHTML = '';
+                    return;
+                }
+
+                let html = '';
+
+                // Badges
+                if (data.is_school) {
+                    html += '<span class="school-badge">🏫 School</span> ';
+                }
+                if (data.is_newsletter) {
+                    html += '<span class="newsletter-badge">📰 Newsletter</span> ';
+                }
+
+                // Summary text
+                if (data.summary) {
+                    html += `<div class="summary-text">${escapeHtml(data.summary)}</div>`;
+                }
+
+                // Unsubscribe link in summary area (only if not already shown inline)
+                if (data.unsubscribe_url && !section.querySelector('.unsubscribe-inline')) {
+                    html += `<a href="javascript:void(0)" onclick="openPopup('${escapeHtml(data.unsubscribe_url)}')" class="unsubscribe-link">↩ Unsubscribe →</a>`;
+                }
+
+                section.innerHTML = html;
+
+            } catch (err) {
+                section.innerHTML = '';
+            }
+        }
+
+        async function doAction(action, emailId) {
+            const btn = event && event.target ? event.target : null;
+            if (btn) btn.classList.add('loading');
+
+            try {
+                const resp = await fetch(`/api/${action}/${emailId}`, { 
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                const data = await resp.json();
+
+                if (data.success) {
+                    showToast(`✅ Email ${action}d`);
+
+                    // Remove card with animation
+                    const card = document.getElementById(`card-${emailId}`);
+                    if (card) {
+                        card.style.transition = 'all 0.3s ease';
+                        card.style.opacity = '0';
+                        card.style.transform = 'translateX(100px)';
+                        setTimeout(() => card.remove(), 300);
+                    }
+
+                    // Update count
+                    const countEl = document.getElementById('email-count');
+                    if (countEl) {
+                        const current = parseInt(countEl.textContent.match(/\d+/)?.[0] || '0');
+                        countEl.textContent = `${current - 1} unread emails`;
+                    }
+                } else {
+                    showToast(`❌ Error: ${data.message || 'Unknown error'}`);
+                }
+            } catch (err) {
+                showToast(`❌ Network error`);
+            } finally {
+                if (btn) btn.classList.remove('loading');
+            }
+        }
+
+        async function reloadEmails() {
+            try {
+                const resp = await fetch('/api/reload', { 
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                const data = await resp.json();
+                if (data.success) {
+                    window.location.href = "/login";
+                }
+            } catch (err) {
+                showToast('❌ Failed to reload');
+            }
+        }
+
+        function renderEmails(emails) {
+            const container = document.getElementById('email-list');
+
+            if (!emails || emails.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">📭</div>
+                        <p>No unread emails!</p>
+                    </div>`;
+                return;
+            }
+
+            let html = '';
+            for (const email of emails) {
+                const tier = email.tier || 'MEDIUM';
+                const vipInfo = email.vip_info;
+                const hasSummary = !!email.summary;
+                const gmailLink = email.gmail_link || '';
+                const unsubUrl = email.unsubscribe_url || '';
+
+                // Build inline unsubscribe link for newsletter/promo emails
+                let unsubHtml = '';
+                if (unsubUrl && (email.is_newsletter || email.tier === 'LOW')) {
+                    unsubHtml = `<a href="javascript:void(0)" onclick="openPopup('${escapeHtml(unsubUrl)}')" class="unsubscribe-inline">↩ Unsubscribe</a>`;
+                }
+
+                html += `
+                <div class="email-card tier-${tier}" id="card-${email.id}">
+                    <div class="card-header" onclick="loadSummary('${email.id}')">
+                        <span class="card-chevron" onclick="event.stopPropagation(); toggleCard('${email.id}')">▼</span>
+                        <div class="card-info">
+                            <div class="card-meta">
+                                <span class="tier-badge tier-${tier}">${tier.replace('_', ' ')}</span>
+                                ${vipInfo ? `<span class="vip-badge">⭐ VIP</span>` : ''}
+                            </div>
+                            <div class="card-from">${escapeHtml(email.from)}</div>
+                            <div class="card-subject">${escapeHtml(email.subject)}</div>
+                        </div>
+                        <div class="card-date">${formatDate(email.date)}</div>
+                    </div>
+
+                    <div class="summary-section">
+                        ${unsubHtml}
+                    </div>
+
+                    <div class="card-actions">
+                        <button class="btn btn-read" onclick="event.stopPropagation(); doAction('read', '${email.id}')">✓ Read</button>
+                        <button class="btn btn-defer" onclick="event.stopPropagation(); doAction('defer', '${email.id}')">⏰ Defer</button>
+                        <button class="btn btn-delete" onclick="event.stopPropagation(); doAction('delete', '${email.id}')">🗑 Delete</button>
+                        ${gmailLink ? `<a href="javascript:void(0)" class="btn btn-open" onclick="event.preventDefault(); openPopup('${escapeHtml(gmailLink)}')">🔗 Open</a>` : ''}
+                    </div>
+                </div>`;
+            }
+
+            container.innerHTML = html;
+
+            // Load summaries for VIP/HIGH emails that don't have one yet
+            for (const email of emails) {
+                if ((email.tier === 'VIP_HIGH' || email.tier === 'HIGH') && !email.summary) {
+                    loadSummary(email.id);
+                }
+            }
+        }
+
+        // Initial render
+        const emails = JSON.parse(document.getElementById('email-data').textContent);
+        renderEmails(emails);
+    </script>
+</body>
+</html>
