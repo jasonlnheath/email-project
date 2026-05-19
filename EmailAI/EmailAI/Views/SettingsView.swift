@@ -13,6 +13,9 @@ struct SettingsView: View {
     @State private var showOpenAIKey: Bool = false
     @State private var saveMessage: String?
 
+    // MARK: - Appearance State
+    @State private var selectedTheme: AppTheme = .system
+
     // MARK: - OAuth State
     @State private var isSignedIn = false
     @State private var userEmail: String?
@@ -49,6 +52,19 @@ struct SettingsView: View {
                             showKey: $showOpenAIKey,
                             saveMessage: $saveMessage
                         )
+                    }
+                }
+
+                // MARK: - Appearance Section
+                Section("Appearance") {
+                    Picker("Theme", selection: $selectedTheme) {
+                        ForEach(AppTheme.allCases, id: \.self) { theme in
+                            Text(theme.displayName).tag(theme)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .onChange(of: selectedTheme) { newTheme in
+                        AppTheme.current = newTheme
                     }
                 }
 
@@ -121,6 +137,9 @@ struct SettingsView: View {
         openAIBaseURL = UserDefaults.standard.string(forKey: Constants.openaiBaseURLKey) ?? Constants.openaiBaseURLDefault
         openAIKey = KeychainService.shared.load(key: Constants.keychainOpenAIKey) ?? ""
         openAIModel = UserDefaults.standard.string(forKey: Constants.openaiModelKey) ?? Constants.openaiModelDefault
+
+        // Load Appearance settings
+        selectedTheme = AppTheme.current
 
         // Load OAuth settings
         isSignedIn = await OAuthService.shared.isSignedIn

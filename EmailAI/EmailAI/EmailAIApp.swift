@@ -5,6 +5,7 @@ import GoogleSignIn
 struct EmailAIApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @AppStorage("isSignedIn") private var isSignedIn = false
+    @AppStorage("selectedTheme") private var selectedTheme: AppTheme = .system
 
     var body: some Scene {
         WindowGroup {
@@ -15,6 +16,7 @@ struct EmailAIApp: App {
                     LoginView()
                 }
             }
+            .preferredColorScheme(ThemeColors.colorScheme(for: selectedTheme))
             .task {
                 // Check initial sign-in state from OAuthService
                 if !isSignedIn {

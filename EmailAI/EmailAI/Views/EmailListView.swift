@@ -2,81 +2,180 @@ import SwiftUI
 
 struct EmailListView: View {
     @EnvironmentObject var viewModel: EmailListViewModel
+    @State private var showingFilterSheet = false
+    @State private var showingSearch = false
+
+    // Helper function to create a binding to the original email in the array
+    private func bindingFor(email: EmailItem) -> Binding<EmailItem> {
+        guard let index = viewModel.emails.firstIndex(where: { $0.emailId == email.emailId }) else {
+            // Fallback to constant binding if email not found
+            return .constant(email)
+        }
+        return $viewModel.emails[index]
+    }
 
     var body: some View {
         NavigationStack {
-            Group {
-                if viewModel.emails.isEmpty {
-                    VStack(spacing: 12) {
-                        Image(systemName: "envelope.badge")
-                            .font(.system(size: 40))
-                            .foregroundStyle(.secondary)
-                        Text("No Emails")
-                            .font(.title2)
-                        Text("Tap the fetch button to load emails from Gmail")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-                } else {
-                    ScrollView {
-                        LazyVStack(spacing: 12) {
-                            ForEach(viewModel.emails.indices, id: \.self) { index in
-                                ExpandableEmailRow(
-                                    email: $viewModel.emails[index],
-                                    onSummarize: {
-                                        viewModel.summarizeEmail(viewModel.emails[index])
-                                    },
-                                    onOpenGmail: {
-                                        if let url = URL(string: viewModel.emails[index].gmailUrl) {
-                                            UIApplication.shared.open(url)
-                                        }
-                                    },
-                                    onToggleRead: {
-                                        viewModel.toggleRead(for: viewModel.emails[index])
-                                    },
-                                    onToggleStar: {
-                                        viewModel.toggleStar(for: viewModel.emails[index])
-                                    },
-                                    onDelete: {
-                                        viewModel.deleteEmail(viewModel.emails[index])
-                                    },
-                                    onDefer: {
-                                        viewModel.deferEmail(viewModel.emails[index])
-                                    },
-                                    onUnsubscribe: {
-                                        if viewModel.emails[index].unsubscribeUrl != nil {
-                                            viewModel.unsubscribe(from: viewModel.emails[index])
-                                        }
-                                    }
-                                )
+            VStack(spacing: 0) {
+                // Search bar at top
+                if showingSearch {
+                    EmailSearchBar(
+                        searchQuery: $viewModel.searchQuery,
+                        searchScope: $viewModel.searchScope,
+                        isSearching: $viewModel.isSearching,
+                        onSearch: {
+                            Task {
+                                await viewModel.performSearch()
                             }
                         }
-                        .padding()
+                    )
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                }
+
+                // Email list
+                Group {
+                    if viewModel.displayedEmails.isEmpty {
+                        VStack(spacing: 12) {
+                            Image(systemName: "envelope.badge")
+                                .font(.system(size: 40))
+                                .foregroundStyle(.secondary)
+                            Text("No Emails")
+                                .font(.title2)
+                            if viewModel.emails.isEmpty {
+                                Text("Tap the fetch button to load emails from Gmail")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                            } else if viewModel.isSearching {
+                                Text("No emails match your search")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                                Button("Clear Search") {
+                                    viewModel.clearSearch()
+                                }
+                                .buttonStyle(.bordered)
+                            } else {
+                                Text("No emails match the current filters")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                                Button("Clear Filters") {
+                                    viewModel.clearFilters()
+                                }
+                                .buttonStyle(.bordered)
+                            }
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    } else {
+                        ScrollView {
+                            LazyVStack(spacing: 12) {
+                                ForEach(viewModel.displayedEmails.indices, id: \.self) { index in
+                                    let email = viewModel.displayedEmails[index]
+                                    ExpandableEmailRow(
+                                        email: bindingFor(email: email),
+                                        onSummarize: {
+                                            viewModel.summarizeEmail(email)
+                                        },
+                                        onOpenGmail: {
+                                            if let url = URL(string: email.gmailUrl) {
+                                                UIApplication.shared.open(url)
+                                                // Remove from list after opening
+                                                viewModel.emails.removeAll { $0.emailId == email.emailId }
+                                            }
+                                        },
+                                        onToggleRead: {
+                                            viewModel.toggleRead(for: email)
+                                        },
+                                        onDelete: {
+                                            viewModel.deleteEmail(email)
+                                        },
+                                        onUnsubscribe: {
+                                            if email.unsubscribeUrl != nil {
+                                                viewModel.unsubscribe(from: email)
+                                            }
+                                        }
+                                    )
+                                }
+                            }
+                            .padding()
+                        }
                     }
                 }
             }
             .navigationTitle("Emails")
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: { viewModel.fetchEmails() }) {
-                        if viewModel.isFetching {
-                            ProgressView()
-                        } else {
-                            Label("Fetch", systemImage: "arrow.clockwise")
+                ToolbarItem(placement: .navigationBarLeading) {
+                    HStack {
+                        // Search toggle button
+                        Button {
+                            withAnimation {
+                                showingSearch.toggle()
+                                if !showingSearch {
+                                    viewModel.clearSearch()
+                                }
+                            }
+                        } label: {
+                            Image(systemName: "magnifyingglass")
+                                .symbolRenderingMode(viewModel.isSearching ? .multicolor : .hierarchical)
+                        }
+
+                        Menu {
+                            ForEach(SortOption.allCases, id: \.self) { option in
+                                Button {
+                                    viewModel.updateSortOption(option)
+                                } label: {
+                                    HStack {
+                                        Text(option.displayName)
+                                        if viewModel.currentSortOption == option {
+                                            Image(systemName: "checkmark")
+                                        }
+                                    }
+                                }
+                            }
+                        } label: {
+                            Image(systemName: "arrow.up.arrow.down")
                         }
                     }
-                    .disabled(viewModel.isFetching)
                 }
-            }
-            .overlay(alignment: .bottom) {
-                if let errorMessage = viewModel.errorMessage {
-                    Text(errorMessage)
-                        .foregroundStyle(.red)
-                        .font(.caption)
-                        .padding()
+
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    HStack {
+                        Button {
+                            showingFilterSheet = true
+                        } label: {
+                            Image(systemName: "line.3.horizontal.decrease.circle")
+                                .symbolRenderingMode(hasActiveFilters() ? .multicolor : .hierarchical)
+                        }
+
+                        Button(action: { viewModel.fetchEmails() }) {
+                            if viewModel.isFetching {
+                                ProgressView()
+                            } else {
+                                Label("Fetch", systemImage: "arrow.clockwise")
+                            }
+                        }
+                        .disabled(viewModel.isFetching)
+                    }
                 }
             }
         }
+        .sheet(isPresented: $showingFilterSheet) {
+            FilterSheet(viewModel: viewModel)
+        }
+        .overlay(alignment: .bottom) {
+            if let errorMessage = viewModel.errorMessage {
+                Text(errorMessage)
+                    .foregroundStyle(.red)
+                    .font(.caption)
+                    .padding()
+            }
+        }
+    }
+
+    private func hasActiveFilters() -> Bool {
+        viewModel.currentFilter.showUnreadOnly ||
+        viewModel.currentFilter.showVIPOnly ||
+        viewModel.currentFilter.showStarredOnly ||
+        viewModel.currentFilter.priorityFilter != nil ||
+        (viewModel.currentFilter.senderFilter?.isEmpty == false)
     }
 }
 
@@ -114,204 +213,229 @@ struct EmailListView_Previews: PreviewProvider {
     }
 }
 
+/// Filter sheet for email filtering
+struct FilterSheet: View {
+    @ObservedObject var viewModel: EmailListViewModel
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var showUnreadOnly: Bool = false
+    @State private var showVIPOnly: Bool = false
+    @State private var showStarredOnly: Bool = false
+    @State private var priorityFilter: EmailPriority? = nil
+    @State private var senderFilter: String = ""
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Status Filters") {
+                    Toggle("Unread Only", isOn: $showUnreadOnly)
+                    Toggle("VIP Only", isOn: $showVIPOnly)
+                    Toggle("Starred Only", isOn: $showStarredOnly)
+                }
+
+                Section("Priority Filter") {
+                    Picker("Priority", selection: $priorityFilter) {
+                        Text("All").tag(nil as EmailPriority?)
+                        ForEach(EmailPriority.allCases, id: \.self) { priority in
+                            Text(priority.displayName).tag(priority as EmailPriority?)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                }
+
+                Section("Sender Filter") {
+                    TextField("Filter by sender", text: $senderFilter)
+                        .autocapitalization(.none)
+                        .disableAutocorrection(true)
+                }
+
+                Section {
+                    Button("Clear All Filters") {
+                        showUnreadOnly = false
+                        showVIPOnly = false
+                        showStarredOnly = false
+                        priorityFilter = nil
+                        senderFilter = ""
+                    }
+                    .foregroundColor(.red)
+                }
+            }
+            .navigationTitle("Filter Emails")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Apply") {
+                        applyFilters()
+                        dismiss()
+                    }
+                }
+            }
+            .onAppear {
+                // Load current filters
+                showUnreadOnly = viewModel.currentFilter.showUnreadOnly
+                showVIPOnly = viewModel.currentFilter.showVIPOnly
+                showStarredOnly = viewModel.currentFilter.showStarredOnly
+                priorityFilter = viewModel.currentFilter.priorityFilter
+                senderFilter = viewModel.currentFilter.senderFilter ?? ""
+            }
+        }
+    }
+
+    private func applyFilters() {
+        var filter = EmailFilter()
+        filter.showUnreadOnly = showUnreadOnly
+        filter.showVIPOnly = showVIPOnly
+        filter.showStarredOnly = showStarredOnly
+        filter.priorityFilter = priorityFilter
+        filter.senderFilter = senderFilter.isEmpty ? nil : senderFilter
+        viewModel.updateFilter(filter)
+    }
+}
+
 /// Expandable email row component with priority border and inline actions
 struct ExpandableEmailRow: View {
     @Binding var email: EmailItem
     var onSummarize: () -> Void
     var onOpenGmail: () -> Void
     var onToggleRead: () -> Void
-    var onToggleStar: () -> Void
     var onDelete: () -> Void
-    var onDefer: () -> Void
     var onUnsubscribe: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // Collapsible header
-            HStack(alignment: .top, spacing: 12) {
-                // Priority indicator
-                Rectangle()
-                    .fill(EmailPriorityCalculator.color(for: email.priority))
-                    .frame(width: 4)
-                    .frame(height: 80)
+        HStack(spacing: 0) {
+            // Full-height priority color strip
+            Rectangle()
+                .fill(EmailPriorityCalculator.color(for: email.priority))
+                .frame(width: 6)
 
-                // Email content
-                VStack(alignment: .leading, spacing: 6) {
-                    // Header row with subject and expand icon
+            VStack(alignment: .leading, spacing: 0) {
+                // Header - tappable for expand/collapse
+                VStack(alignment: .leading, spacing: 4) {
                     HStack {
                         Text(email.subject)
                             .font(.headline)
                             .lineLimit(2)
-                            .strikethrough(email.isRead, color: .gray)
-
                         Spacer()
-
-                        // Expand/collapse icon
-                        Image(systemName: email.isExpanded ? "chevron.up" : "chevron.down")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                        HStack(spacing: 4) {
+                            Text(formattedDate(email.date))
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                            Image(systemName: email.isExpanded ? "chevron.down" : "chevron.right")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
                     }
 
-                    // Sender and date
                     HStack {
                         Text(email.sender)
-                            .font(.subheadline)
+                            .font(.caption)
                             .foregroundColor(.secondary)
                             .lineLimit(1)
 
                         Spacer()
 
-                        Text(formattedDate(email.date))
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-
-                    // VIP badge
-                    if let vipInfo = email.vipInfo {
-                        HStack(spacing: 4) {
-                            Image(systemName: "star.fill")
-                                .font(.caption2)
-                                .foregroundColor(.yellow)
-                            Text(vipInfo.name)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
+                        // VIP badge
+                        if email.vipInfo != nil {
+                            HStack(spacing: 2) {
+                                Image(systemName: "star.fill")
+                                    .font(.caption2)
+                                    .foregroundColor(.yellow)
+                            }
                         }
-                    }
 
-                    // Priority badge
-                    Text(email.priority.displayName)
-                        .font(.caption2)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 2)
-                        .background(EmailPriorityCalculator.backgroundColor(for: email.priority))
-                        .foregroundColor(EmailPriorityCalculator.color(for: email.priority))
-                        .cornerRadius(4)
+                        // Priority badge
+                        Text(email.priority.displayName)
+                            .font(.caption2)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(EmailPriorityCalculator.backgroundColor(for: email.priority))
+                            .foregroundColor(EmailPriorityCalculator.color(for: email.priority))
+                            .cornerRadius(3)
+                    }
                 }
-                .padding(.vertical, 12)
-                .padding(.trailing, 12)
+                .padding(12)
                 .contentShape(Rectangle())
                 .onTapGesture {
                     withAnimation(.easeInOut(duration: 0.2)) {
                         email.isExpanded.toggle()
+                        // Auto-generate summary when expanding
+                        if email.isExpanded && email.summary == nil {
+                            onSummarize()
+                        }
                     }
                 }
-            }
 
-            // Expandable content
-            if email.isExpanded {
+                // Expanded section - shows summary
+                if email.isExpanded {
+                    Divider()
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        if let summary = email.summary {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Summary")
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(.secondary)
+                                Text(summary)
+                                    .font(.body)
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                        } else {
+                            HStack(spacing: 8) {
+                                ProgressView()
+                                    .scaleEffect(0.7)
+                                Text("Generating summary...")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                        }
+                    }
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+                }
+
                 Divider()
-                    .padding(.leading, 16)
 
-                VStack(alignment: .leading, spacing: 12) {
-                    // Summary section
-                    if let summary = email.summary, !summary.isEmpty {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Summary")
-                                .font(.subheadline)
-                                .fontWeight(.semibold)
-                            Text(summary)
-                                .font(.body)
-                                .foregroundColor(.secondary)
-                        }
-                        .padding(.horizontal, 16)
-                        .padding(.top, 8)
+                // Full-width action buttons
+                VStack(spacing: 0) {
+                    HStack(spacing: 0) {
+                        DashboardActionButton(
+                            title: email.isRead ? "Mark Unread" : "Mark Read",
+                            icon: email.isRead ? "envelope.badge.fill" : "envelope.open.fill",
+                            color: .blue,
+                            action: onToggleRead
+                        )
+
+                        DashboardActionButton(
+                            title: "Open",
+                            icon: "arrow.up.right.square",
+                            color: .green,
+                            action: onOpenGmail
+                        )
+
+                        DashboardActionButton(
+                            title: "Delete",
+                            icon: "trash",
+                            color: .red,
+                            action: onDelete
+                        )
                     }
 
-                    // Action buttons
-                    HStack(spacing: 12) {
-                        // Read/Unread button
-                        Button(action: onToggleRead) {
-                            Label(
-                                email.isRead ? "Mark Unread" : "Mark Read",
-                                systemImage: email.isRead ? "envelope.badge.fill" : "envelope.open.fill"
-                            )
-                            .font(.caption)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(Color.blue.opacity(0.1))
-                            .foregroundColor(.blue)
-                            .cornerRadius(6)
-                        }
-
-                        // Star button
-                        Button(action: onToggleStar) {
-                            Label(
-                                email.isStarred ? "Unstar" : "Star",
-                                systemImage: email.isStarred ? "star.fill" : "star"
-                            )
-                            .font(.caption)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(Color.yellow.opacity(0.1))
-                            .foregroundColor(.yellow)
-                            .cornerRadius(6)
-                        }
-
-                        // Defer button
-                        Button(action: onDefer) {
-                            Label("Defer", systemImage: "clock")
-                                .font(.caption)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .background(Color.orange.opacity(0.1))
-                                .foregroundColor(.orange)
-                                .cornerRadius(6)
-                        }
-
-                        // Delete button
-                        Button(action: onDelete) {
-                            Label("Delete", systemImage: "trash")
-                                .font(.caption)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .background(Color.red.opacity(0.1))
-                                .foregroundColor(.red)
-                                .cornerRadius(6)
-                        }
-
-                        // Unsubscribe button (only if unsubscribe URL exists)
-                        if email.unsubscribeUrl != nil {
-                            Button(action: onUnsubscribe) {
-                                Label("Unsubscribe", systemImage: "minus.circle")
-                                    .font(.caption)
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 6)
-                                    .background(Color.gray.opacity(0.1))
-                                    .foregroundColor(.gray)
-                                    .cornerRadius(6)
-                            }
-                        }
-
-                        // Open in Gmail button
-                        Button(action: onOpenGmail) {
-                            Label("Open", systemImage: "arrow.up.right.square")
-                                .font(.caption)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .background(Color.gray.opacity(0.1))
-                                .foregroundColor(.primary)
-                                .cornerRadius(6)
-                        }
-
-                        // Summarize button (only if no summary)
-                        if email.summary == nil {
-                            Button(action: onSummarize) {
-                                Label("Summarize", systemImage: "sparkles")
-                                    .font(.caption)
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 6)
-                                    .background(Color.purple.opacity(0.1))
-                                    .foregroundColor(.purple)
-                                    .cornerRadius(6)
-                            }
-                        }
-
-                        Spacer()
+                    if email.unsubscribeUrl != nil {
+                        DashboardActionButton(
+                            title: "Unsubscribe",
+                            icon: "minus.circle",
+                            color: .gray,
+                            action: onUnsubscribe
+                        )
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.bottom, 8)
                 }
-                .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
         .background(Color(.systemBackground))
@@ -979,5 +1103,62 @@ struct EmailDetailContentView: View {
         formatter.dateStyle = .medium
         formatter.timeStyle = .short
         return formatter.string(from: date)
+    }
+}
+
+// MARK: - Email Search Bar
+
+/// Email search bar with scope selection
+struct EmailSearchBar: View {
+    @Binding var searchQuery: String
+    @Binding var searchScope: SearchScope
+    @Binding var isSearching: Bool
+    let onSearch: () -> Void
+
+    var body: some View {
+        VStack(spacing: 12) {
+            // Search text field
+            HStack(spacing: 8) {
+                Image(systemName: "magnifyingglass")
+                    .foregroundColor(.secondary)
+
+                TextField("Search emails...", text: $searchQuery)
+                    .textFieldStyle(.plain)
+                    .onSubmit {
+                        onSearch()
+                    }
+
+                if !searchQuery.isEmpty {
+                    Button {
+                        searchQuery = ""
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.secondary)
+                    }
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background(Color(.secondarySystemBackground))
+            .cornerRadius(10)
+
+            // Scope picker
+            Picker("Scope", selection: $searchScope) {
+                ForEach(SearchScope.allCases, id: \.self) { scope in
+                    Text(scope.displayName).tag(scope)
+                }
+            }
+            .pickerStyle(.segmented)
+            .padding(.horizontal, 8)
+        }
+        .padding(.horizontal)
+        .padding(.vertical, 12)
+        .background(Color(.systemBackground))
+        .overlay(
+            Rectangle()
+                .fill(Color(.separator).opacity(0.5))
+                .frame(height: 0.5),
+            alignment: .bottom
+        )
     }
 }
