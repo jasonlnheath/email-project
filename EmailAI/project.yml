@@ -1,0 +1,57 @@
+name: EmailAI
+options:
+  bundleIdPrefix: com.emailai
+  deploymentTarget:
+    iOS: "16.0"
+  xcodeVersion: "14.0"
+  generateEmptyDirectories: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.7"
+    IPHONEOS_DEPLOYMENT_TARGET: "16.0"
+    TARGETED_DEVICE_FAMILY: "1,2"
+
+packages:
+  GoogleSignIn:
+    url: https://github.com/google/GoogleSignIn-iOS
+    majorVersion: 6.2.4
+
+targets:
+  EmailAI:
+    type: application
+    platform: iOS
+    sources:
+      - path: EmailAI
+        excludes:
+          - "Info.plist"
+    dependencies:
+      - package: GoogleSignIn
+        product: GoogleSignIn
+    settings:
+      base:
+        INFOPLIST_FILE: EmailAI/Info.plist
+        PRODUCT_BUNDLE_IDENTIFIER: com.emailai.EmailAI
+        MARKETING_VERSION: "1.0.0"
+        CURRENT_PROJECT_VERSION: 1
+        SWIFT_EMIT_LOC_STRINGS: YES
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        GENERATE_INFOPLIST_FILE: NO
+        CODE_SIGN_IDENTITY: "Apple Development"
+        CODE_SIGN_STYLE: Automatic
+    entitlements:
+      path: EmailAI/EmailAI.entitlements
+
+  EmailAITests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: EmailAITests
+    dependencies:
+      - target: EmailAI
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.emailai.EmailAITests
+        CODE_SIGN_IDENTITY: "-"
+        GENERATE_INFOPLIST_FILE: YES
+

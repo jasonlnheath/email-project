@@ -1,0 +1,647 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		028337CC9C03363C9A19D3DF /* EmailAIApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 890A8076845D93BE0C093860 /* EmailAIApp.swift */; };
+		07C75FFE8F53E3E6E823F7AF /* VectorIndex.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF7877B908A376F6C5AF414D /* VectorIndex.swift */; };
+		0EAC8D26F549D73439F8BCEE /* BM25.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C37A2A236D6DA578DC9031D /* BM25.swift */; };
+		1063ABC33AA6A26D39AD9587 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EC5A3C871CC91A47B83FF29 /* SettingsView.swift */; };
+		13B7A722FC56DE70E6CDC854 /* LLMProviderFactoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67D0668D8F81DFF50C07BFE7 /* LLMProviderFactoryTests.swift */; };
+		263C7A49D7A5A79E4EEEDD65 /* Contact.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66DB07D66947684284219EA /* Contact.swift */; };
+		2861E156E3250E35C88DD509 /* LLMProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE39E2FA2C3D02DA358091F8 /* LLMProviderTests.swift */; };
+		28B55E56AB6212EB303EF0A8 /* ContactsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA482F2A4B4F11093BD3297 /* ContactsViewModel.swift */; };
+		2C62FAD66CAF78A71763F906 /* EmailListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1254F168E939C65A2E5ABC52 /* EmailListViewModel.swift */; };
+		2D16F31484081C56D400CB1E /* SummaryItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = F38FCCBE00EAAA27AB18DD12 /* SummaryItem.swift */; };
+		2EC2DE880F85C8B7F1C4C1A9 /* EmailListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78C28735D90E4AE057FEB19B /* EmailListView.swift */; };
+		326ED35BDA7CFCC03C2845AE /* LLMProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = E39A98BD386C2F034AE9CC5A /* LLMProvider.swift */; };
+		356D36074A404678980829F3 /* EmailItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70FC5B907129E426401CFE4C /* EmailItem.swift */; };
+		37BAA608AB6D370D168D0C6C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4EC8D175FAF898703F757CF /* ContentView.swift */; };
+		41D548F8C1DDB5A56F39C9EF /* HybridScorer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93F0F43D2E7D44AF96DC91D8 /* HybridScorer.swift */; };
+		5C29E6E0DB90CCC91CF1FDA3 /* SearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F216F1653AEE6FD12BF1C1C /* SearchViewModel.swift */; };
+		6A223A702FBAB9DC002E1071 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 6A223A6F2FBAB9DC002E1071 /* GoogleSignIn */; };
+		6AB9A4C5A1397BA1027E971A /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8902BEA1CC38F6EC03039354 /* Extensions.swift */; };
+		71C0355AD5152312EC8BB83E /* KeychainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DBCF700663727F13FF6455A /* KeychainService.swift */; };
+		79154B41C3D4BDD5CF04D017 /* OpenAIProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA6D2F20DEDEBEC836786FB /* OpenAIProvider.swift */; };
+		8AFC6F2863EEAE850D13F43D /* OAuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2FEA558EC1F25D3ED8F0828 /* OAuthService.swift */; };
+		935F1756B7541EC41AFAF3A2 /* SearchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7FE0ED2E8A3B1A8BA029C23 /* SearchService.swift */; };
+		98E6CA832C3ABEEE316C120E /* ChatViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7B7135F0A5E8C1D88DB2808 /* ChatViewModel.swift */; };
+		9E972EDC827FA7A187FE9CFD /* PersistenceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3E3661308484C16C1622117 /* PersistenceController.swift */; };
+		A3737D3EFECC2229C67A5089 /* EmbeddingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75056BE106D4394F0A787D61 /* EmbeddingService.swift */; };
+		A65259876F7FE03C8AB177C0 /* SummarizerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BDD556461C02F916F49C036 /* SummarizerService.swift */; };
+		A807F951798043E3E9A412C7 /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DC1439191B18433947951B3 /* SearchView.swift */; };
+		B39C9C5297B82E008A8922B5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 52BB4385C23E5AFA4E2166D9 /* Assets.xcassets */; };
+		B6BA9817C3DE39E611E7A17A /* ChatMessageItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B80BDB6E91FB7D5C8943DA0 /* ChatMessageItem.swift */; };
+		BEE59C1FA2A50767DA87DEC3 /* ContactsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 165200BDEBAD1C11A7F714D2 /* ContactsService.swift */; };
+		C0BA8B9BAF4757901196C540 /* EmailDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52EE23D69BB4A2CFA888EA8C /* EmailDetailView.swift */; };
+		CA7BE556C3C49097F2F3C706 /* LLMProviderFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A62009ABBE54888A925B2EF /* LLMProviderFactory.swift */; };
+		D3A97F1AB864F9D1C05DFE52 /* AnthropicProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86E8C670B42A597D9557FB1E /* AnthropicProvider.swift */; };
+		DDADB3EAEBA126EA7C395FF0 /* ContactsServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82E9D26E895AC46BEC06AB44 /* ContactsServiceTests.swift */; };
+		E493BF0FB06F818D891251B0 /* ContactsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AED615C6C7E8B842B35819F7 /* ContactsView.swift */; };
+		E58D8C6CD4851C38575F14BE /* GmailService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90A970675DA1E5CE19753F5 /* GmailService.swift */; };
+		E6D08E905ED9EFF927661661 /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37D6331F343D48D9E6A7BA8F /* ChatView.swift */; };
+		EA1E126992F4ABF4F721D685 /* OAuthServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C1E14718F925F8115D260E5 /* OAuthServiceTests.swift */; };
+		EB5D68BAA4822081780A9D31 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB9EF9FED54F3E8FD964FC9C /* Constants.swift */; };
+		ED6037D48755DEF37F3C9A47 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9ED6D388D2B6036BAFEEE0C5 /* LoginView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		0B519303DEFEA13DFB76D3BB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B90CC4D879647F5729F6A3BE /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B60215D09030B5363E962DF4;
+			remoteInfo = EmailAI;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		062FD509D03E57BD66FB105E /* EmailAI.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = EmailAI.entitlements; sourceTree = "<group>"; };
+		0A62009ABBE54888A925B2EF /* LLMProviderFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMProviderFactory.swift; sourceTree = "<group>"; };
+		1254F168E939C65A2E5ABC52 /* EmailListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmailListViewModel.swift; sourceTree = "<group>"; };
+		165200BDEBAD1C11A7F714D2 /* ContactsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactsService.swift; sourceTree = "<group>"; };
+		37D6331F343D48D9E6A7BA8F /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
+		3DBCF700663727F13FF6455A /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
+		4BDD556461C02F916F49C036 /* SummarizerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummarizerService.swift; sourceTree = "<group>"; };
+		52BB4385C23E5AFA4E2166D9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		52EE23D69BB4A2CFA888EA8C /* EmailDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmailDetailView.swift; sourceTree = "<group>"; };
+		5C37A2A236D6DA578DC9031D /* BM25.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BM25.swift; sourceTree = "<group>"; };
+		5F216F1653AEE6FD12BF1C1C /* SearchViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchViewModel.swift; sourceTree = "<group>"; };
+		67D0668D8F81DFF50C07BFE7 /* LLMProviderFactoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMProviderFactoryTests.swift; sourceTree = "<group>"; };
+		70FC5B907129E426401CFE4C /* EmailItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmailItem.swift; sourceTree = "<group>"; };
+		75056BE106D4394F0A787D61 /* EmbeddingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmbeddingService.swift; sourceTree = "<group>"; };
+		78C28735D90E4AE057FEB19B /* EmailListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmailListView.swift; sourceTree = "<group>"; };
+		82E9D26E895AC46BEC06AB44 /* ContactsServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactsServiceTests.swift; sourceTree = "<group>"; };
+		86E8C670B42A597D9557FB1E /* AnthropicProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnthropicProvider.swift; sourceTree = "<group>"; };
+		8902BEA1CC38F6EC03039354 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		890A8076845D93BE0C093860 /* EmailAIApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmailAIApp.swift; sourceTree = "<group>"; };
+		8B80BDB6E91FB7D5C8943DA0 /* ChatMessageItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMessageItem.swift; sourceTree = "<group>"; };
+		8C1E14718F925F8115D260E5 /* OAuthServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OAuthServiceTests.swift; sourceTree = "<group>"; };
+		8DC1439191B18433947951B3 /* SearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchView.swift; sourceTree = "<group>"; };
+		93F0F43D2E7D44AF96DC91D8 /* HybridScorer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HybridScorer.swift; sourceTree = "<group>"; };
+		9EC5A3C871CC91A47B83FF29 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		9ED6D388D2B6036BAFEEE0C5 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		A4EC8D175FAF898703F757CF /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		A66DB07D66947684284219EA /* Contact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Contact.swift; sourceTree = "<group>"; };
+		AB638E86BB89E1629B21A135 /* EmailAI.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = EmailAI.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AED615C6C7E8B842B35819F7 /* ContactsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactsView.swift; sourceTree = "<group>"; };
+		B7B7135F0A5E8C1D88DB2808 /* ChatViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewModel.swift; sourceTree = "<group>"; };
+		D2FEA558EC1F25D3ED8F0828 /* OAuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OAuthService.swift; sourceTree = "<group>"; };
+		DB9EF9FED54F3E8FD964FC9C /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		DE1114D9CC5D451E0A204B9D /* EmailAITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = EmailAITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		DEA482F2A4B4F11093BD3297 /* ContactsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactsViewModel.swift; sourceTree = "<group>"; };
+		DEA6D2F20DEDEBEC836786FB /* OpenAIProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAIProvider.swift; sourceTree = "<group>"; };
+		DF7877B908A376F6C5AF414D /* VectorIndex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VectorIndex.swift; sourceTree = "<group>"; };
+		E39A98BD386C2F034AE9CC5A /* LLMProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMProvider.swift; sourceTree = "<group>"; };
+		E3E3661308484C16C1622117 /* PersistenceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceController.swift; sourceTree = "<group>"; };
+		E7FE0ED2E8A3B1A8BA029C23 /* SearchService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchService.swift; sourceTree = "<group>"; };
+		E90A970675DA1E5CE19753F5 /* GmailService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GmailService.swift; sourceTree = "<group>"; };
+		F38FCCBE00EAAA27AB18DD12 /* SummaryItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryItem.swift; sourceTree = "<group>"; };
+		FE39E2FA2C3D02DA358091F8 /* LLMProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMProviderTests.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		E84B28DE6ADEAD7F0DEE3888 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6A223A702FBAB9DC002E1071 /* GoogleSignIn in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		11011708AF9ABF31B50A714D /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				B7B7135F0A5E8C1D88DB2808 /* ChatViewModel.swift */,
+				DEA482F2A4B4F11093BD3297 /* ContactsViewModel.swift */,
+				1254F168E939C65A2E5ABC52 /* EmailListViewModel.swift */,
+				5F216F1653AEE6FD12BF1C1C /* SearchViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		155ABB06B377985504039423 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				DB9EF9FED54F3E8FD964FC9C /* Constants.swift */,
+				8902BEA1CC38F6EC03039354 /* Extensions.swift */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
+		5BBDE61012DA472515F76157 = {
+			isa = PBXGroup;
+			children = (
+				FDA85E203E1794D5299BF3D1 /* EmailAI */,
+				D0F4C0A3C2A13C65C121BAD3 /* EmailAITests */,
+				F1E6812A22227696EABDF187 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		60FC5D5F07E9ECF62D4E6687 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				8B80BDB6E91FB7D5C8943DA0 /* ChatMessageItem.swift */,
+				A66DB07D66947684284219EA /* Contact.swift */,
+				70FC5B907129E426401CFE4C /* EmailItem.swift */,
+				F38FCCBE00EAAA27AB18DD12 /* SummaryItem.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		6D80F108277CAA827CC8BD22 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				37D6331F343D48D9E6A7BA8F /* ChatView.swift */,
+				AED615C6C7E8B842B35819F7 /* ContactsView.swift */,
+				52EE23D69BB4A2CFA888EA8C /* EmailDetailView.swift */,
+				78C28735D90E4AE057FEB19B /* EmailListView.swift */,
+				9ED6D388D2B6036BAFEEE0C5 /* LoginView.swift */,
+				8DC1439191B18433947951B3 /* SearchView.swift */,
+				9EC5A3C871CC91A47B83FF29 /* SettingsView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		B9276BC3153716FAC0ED3DB6 /* Search */ = {
+			isa = PBXGroup;
+			children = (
+				5C37A2A236D6DA578DC9031D /* BM25.swift */,
+				93F0F43D2E7D44AF96DC91D8 /* HybridScorer.swift */,
+				DF7877B908A376F6C5AF414D /* VectorIndex.swift */,
+			);
+			path = Search;
+			sourceTree = "<group>";
+		};
+		D0F4C0A3C2A13C65C121BAD3 /* EmailAITests */ = {
+			isa = PBXGroup;
+			children = (
+				82E9D26E895AC46BEC06AB44 /* ContactsServiceTests.swift */,
+				67D0668D8F81DFF50C07BFE7 /* LLMProviderFactoryTests.swift */,
+				FE39E2FA2C3D02DA358091F8 /* LLMProviderTests.swift */,
+				8C1E14718F925F8115D260E5 /* OAuthServiceTests.swift */,
+			);
+			path = EmailAITests;
+			sourceTree = "<group>";
+		};
+		E33D27D8AA78B6E81DFDCE69 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				86E8C670B42A597D9557FB1E /* AnthropicProvider.swift */,
+				165200BDEBAD1C11A7F714D2 /* ContactsService.swift */,
+				75056BE106D4394F0A787D61 /* EmbeddingService.swift */,
+				E90A970675DA1E5CE19753F5 /* GmailService.swift */,
+				3DBCF700663727F13FF6455A /* KeychainService.swift */,
+				E39A98BD386C2F034AE9CC5A /* LLMProvider.swift */,
+				0A62009ABBE54888A925B2EF /* LLMProviderFactory.swift */,
+				D2FEA558EC1F25D3ED8F0828 /* OAuthService.swift */,
+				DEA6D2F20DEDEBEC836786FB /* OpenAIProvider.swift */,
+				E7FE0ED2E8A3B1A8BA029C23 /* SearchService.swift */,
+				4BDD556461C02F916F49C036 /* SummarizerService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		F1E6812A22227696EABDF187 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AB638E86BB89E1629B21A135 /* EmailAI.app */,
+				DE1114D9CC5D451E0A204B9D /* EmailAITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		FDA85E203E1794D5299BF3D1 /* EmailAI */ = {
+			isa = PBXGroup;
+			children = (
+				52BB4385C23E5AFA4E2166D9 /* Assets.xcassets */,
+				A4EC8D175FAF898703F757CF /* ContentView.swift */,
+				062FD509D03E57BD66FB105E /* EmailAI.entitlements */,
+				890A8076845D93BE0C093860 /* EmailAIApp.swift */,
+				E3E3661308484C16C1622117 /* PersistenceController.swift */,
+				60FC5D5F07E9ECF62D4E6687 /* Models */,
+				B9276BC3153716FAC0ED3DB6 /* Search */,
+				E33D27D8AA78B6E81DFDCE69 /* Services */,
+				155ABB06B377985504039423 /* Utils */,
+				11011708AF9ABF31B50A714D /* ViewModels */,
+				6D80F108277CAA827CC8BD22 /* Views */,
+			);
+			path = EmailAI;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		40F167B2BBD4C9C7CBCFC150 /* EmailAITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6D2344510EBAB11CDD7F8FDE /* Build configuration list for PBXNativeTarget "EmailAITests" */;
+			buildPhases = (
+				BECC8284C39E5134B2C05CFE /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				12F368F1D9F40ABD3D6952CE /* PBXTargetDependency */,
+			);
+			name = EmailAITests;
+			productName = EmailAITests;
+			productReference = DE1114D9CC5D451E0A204B9D /* EmailAITests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		B60215D09030B5363E962DF4 /* EmailAI */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 034748DE2CA1343D070590AA /* Build configuration list for PBXNativeTarget "EmailAI" */;
+			buildPhases = (
+				223E2DBAFF6536D1C0A2F556 /* Sources */,
+				1E85789CCF9320544AD39A6A /* Resources */,
+				E84B28DE6ADEAD7F0DEE3888 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = EmailAI;
+			packageProductDependencies = (
+				6A223A6F2FBAB9DC002E1071 /* GoogleSignIn */,
+			);
+			productName = EmailAI;
+			productReference = AB638E86BB89E1629B21A135 /* EmailAI.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		B90CC4D879647F5729F6A3BE /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1400;
+				TargetAttributes = {
+					B60215D09030B5363E962DF4 = {
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = AAC67AD818CEB118C774A013 /* Build configuration list for PBXProject "EmailAI" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 5BBDE61012DA472515F76157;
+			packageReferences = (
+				6A223A6E2FBAB9DC002E1071 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
+			);
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				B60215D09030B5363E962DF4 /* EmailAI */,
+				40F167B2BBD4C9C7CBCFC150 /* EmailAITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		1E85789CCF9320544AD39A6A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B39C9C5297B82E008A8922B5 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		223E2DBAFF6536D1C0A2F556 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D3A97F1AB864F9D1C05DFE52 /* AnthropicProvider.swift in Sources */,
+				0EAC8D26F549D73439F8BCEE /* BM25.swift in Sources */,
+				B6BA9817C3DE39E611E7A17A /* ChatMessageItem.swift in Sources */,
+				E6D08E905ED9EFF927661661 /* ChatView.swift in Sources */,
+				98E6CA832C3ABEEE316C120E /* ChatViewModel.swift in Sources */,
+				EB5D68BAA4822081780A9D31 /* Constants.swift in Sources */,
+				263C7A49D7A5A79E4EEEDD65 /* Contact.swift in Sources */,
+				BEE59C1FA2A50767DA87DEC3 /* ContactsService.swift in Sources */,
+				E493BF0FB06F818D891251B0 /* ContactsView.swift in Sources */,
+				28B55E56AB6212EB303EF0A8 /* ContactsViewModel.swift in Sources */,
+				37BAA608AB6D370D168D0C6C /* ContentView.swift in Sources */,
+				028337CC9C03363C9A19D3DF /* EmailAIApp.swift in Sources */,
+				C0BA8B9BAF4757901196C540 /* EmailDetailView.swift in Sources */,
+				356D36074A404678980829F3 /* EmailItem.swift in Sources */,
+				2EC2DE880F85C8B7F1C4C1A9 /* EmailListView.swift in Sources */,
+				2C62FAD66CAF78A71763F906 /* EmailListViewModel.swift in Sources */,
+				A3737D3EFECC2229C67A5089 /* EmbeddingService.swift in Sources */,
+				6AB9A4C5A1397BA1027E971A /* Extensions.swift in Sources */,
+				E58D8C6CD4851C38575F14BE /* GmailService.swift in Sources */,
+				41D548F8C1DDB5A56F39C9EF /* HybridScorer.swift in Sources */,
+				71C0355AD5152312EC8BB83E /* KeychainService.swift in Sources */,
+				326ED35BDA7CFCC03C2845AE /* LLMProvider.swift in Sources */,
+				CA7BE556C3C49097F2F3C706 /* LLMProviderFactory.swift in Sources */,
+				ED6037D48755DEF37F3C9A47 /* LoginView.swift in Sources */,
+				8AFC6F2863EEAE850D13F43D /* OAuthService.swift in Sources */,
+				79154B41C3D4BDD5CF04D017 /* OpenAIProvider.swift in Sources */,
+				9E972EDC827FA7A187FE9CFD /* PersistenceController.swift in Sources */,
+				935F1756B7541EC41AFAF3A2 /* SearchService.swift in Sources */,
+				A807F951798043E3E9A412C7 /* SearchView.swift in Sources */,
+				5C29E6E0DB90CCC91CF1FDA3 /* SearchViewModel.swift in Sources */,
+				1063ABC33AA6A26D39AD9587 /* SettingsView.swift in Sources */,
+				A65259876F7FE03C8AB177C0 /* SummarizerService.swift in Sources */,
+				2D16F31484081C56D400CB1E /* SummaryItem.swift in Sources */,
+				07C75FFE8F53E3E6E823F7AF /* VectorIndex.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BECC8284C39E5134B2C05CFE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DDADB3EAEBA126EA7C395FF0 /* ContactsServiceTests.swift in Sources */,
+				13B7A722FC56DE70E6CDC854 /* LLMProviderFactoryTests.swift in Sources */,
+				2861E156E3250E35C88DD509 /* LLMProviderTests.swift in Sources */,
+				EA1E126992F4ABF4F721D685 /* OAuthServiceTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		12F368F1D9F40ABD3D6952CE /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B60215D09030B5363E962DF4 /* EmailAI */;
+			targetProxy = 0B519303DEFEA13DFB76D3BB /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		0577945C26EBA71FE8C4945C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "-";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.emailai.EmailAITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/EmailAI.app/EmailAI";
+			};
+			name = Release;
+		};
+		284B35C78EAF2B4B2FD99CAC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_MODULE_VERIFIER = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
+				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu11 gnu++14";
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.7;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		3CA92EB115F23FD8EEAFBAC5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_MODULE_VERIFIER = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
+				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu11 gnu++14";
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.7;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		89AF0263FFB44E31FEF977A8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = EmailAI/EmailAI.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = EmailAI/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.emailai.EmailAI;
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A38FB492B72E3247AF89697B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "-";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.emailai.EmailAITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/EmailAI.app/EmailAI";
+			};
+			name = Debug;
+		};
+		F279A23514EB00A0B3F95CD3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = EmailAI/EmailAI.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = EmailAI/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.emailai.EmailAI;
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		034748DE2CA1343D070590AA /* Build configuration list for PBXNativeTarget "EmailAI" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				89AF0263FFB44E31FEF977A8 /* Debug */,
+				F279A23514EB00A0B3F95CD3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		6D2344510EBAB11CDD7F8FDE /* Build configuration list for PBXNativeTarget "EmailAITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A38FB492B72E3247AF89697B /* Debug */,
+				0577945C26EBA71FE8C4945C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		AAC67AD818CEB118C774A013 /* Build configuration list for PBXProject "EmailAI" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3CA92EB115F23FD8EEAFBAC5 /* Debug */,
+				284B35C78EAF2B4B2FD99CAC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		6A223A6E2FBAB9DC002E1071 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS/";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 6.2.4;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		6A223A6F2FBAB9DC002E1071 /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 6A223A6E2FBAB9DC002E1071 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = B90CC4D879647F5729F6A3BE /* Project object */;
+}
